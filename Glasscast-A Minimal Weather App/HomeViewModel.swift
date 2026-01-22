@@ -67,13 +67,16 @@ final class HomeViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let service: WeatherService
+
+    // Track the currently running refresh task so we can cancel it when the city changes.
+    private var currentRefreshTask: Task<Void, Never>?
+    // Monotonic ID so we only apply the latest results.
     private var refreshTaskID = UUID()
 
     // Simple toggle to silence logs if desired
     private let loggingEnabled = true
 
     // Expose a safe, read-only way to tell if this model is using the default/mock service.
-    // This avoids leaking the service instance while allowing the view to decide whether to swap in the injected one.
     var isUsingDefaultService: Bool {
         service is MockWeatherService
     }
@@ -95,73 +98,91 @@ final class HomeViewModel: ObservableObject {
         }
     }
 
+    // Cancel any in-flight refresh and reset state to idle.
+    func cancelRefresh() {
+        currentRefreshTask?.cancel()
+        currentRefreshTask = nil
+        setIdle()
+        if loggingEnabled {
+            print("[HomeVM] cancelRefresh()")
+        }
+    }
+
+    // Start a new refresh for the current city.
     func refresh() async {
+        // Cancel any running task first so the new one starts cleanly.
+        cancelRefresh()
+
         let taskID = UUID()
         refreshTaskID = taskID
-
-        // If a refresh is already running, ignore new ones until finished.
-        guard !isLoading else {
-            if loggingEnabled {
-                print("[HomeVM] refresh() ignored; already loading")
-            }
-            return
-        }
 
         if loggingEnabled {
             print("[HomeVM] refresh() begin id=\(taskID) city=\(city)")
         }
         setLoading(true)
 
-        do {
-            let start = Date()
-            if loggingEnabled {
-                print("[HomeVM] -> fetching current + 5-day forecast (real)")
-            }
-
-            async let c = service.fetchCurrentWeather(for: city)
-            async let f = service.fetch5DayForecast(for: city)
-            let (current, forecast) = try await (c, f)
-
-            let elapsed = Date().timeIntervalSince(start)
-            if loggingEnabled {
-                print("[HomeVM] <- fetched in \(String(format: "%.2f", elapsed))s")
-                print("[HomeVM] current: city=\(current.city) temp=\(current.temperature)F cond=\(current.condition) hi=\(current.high) lo=\(current.low) symbol=\(current.symbolName) uv=\(current.uvIndex)")
-                let summary = forecast.map { "\($0.weekday): H\($0.high)L\($0.low)" }.joined(separator: ", ")
-                print("[HomeVM] forecast(5): \(summary)")
-            }
-
-            // Only apply results if this is still the latest refresh
-            guard taskID == refreshTaskID else {
+        // Create a task we can cancel if a new city selection arrives.
+        currentRefreshTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let start = Date()
                 if loggingEnabled {
-                    print("[HomeVM] refresh() discard results; newer task exists id=\(refreshTaskID)")
+                    print("[HomeVM] -> fetching current + 5-day forecast (real)")
                 }
-                return
-            }
-            self.current = current
-            self.forecast = forecast
 
-            setLoaded()
-            if loggingEnabled {
-                print("[HomeVM] refresh() success id=\(taskID)")
-            }
-        } catch is CancellationError {
-            setIdle()
-            if loggingEnabled {
-                print("[HomeVM] refresh() cancelled")
-            }
-        } catch {
-            // Only show error if still the latest refresh
-            guard taskID == refreshTaskID else {
+                async let c = service.fetchCurrentWeather(for: city)
+                async let f = service.fetch5DayForecast(for: city)
+                let (current, forecast) = try await (c, f)
+
+                // If cancelled while awaiting, bail early
+                try Task.checkCancellation()
+
+                let elapsed = Date().timeIntervalSince(start)
                 if loggingEnabled {
-                    print("[HomeVM] refresh() error discarded; newer task exists id=\(refreshTaskID) err=\(error)")
+                    print("[HomeVM] <- fetched in \(String(format: "%.2f", elapsed))s")
+                    print("[HomeVM] current: city=\(current.city) temp=\(current.temperature)F cond=\(current.condition) hi=\(current.high) lo=\(current.low) symbol=\(current.symbolName) uv=\(current.uvIndex)")
+                    let summary = forecast.map { "\($0.weekday): H\($0.high)L\($0.low)" }.joined(separator: ", ")
+                    print("[HomeVM] forecast(5): \(summary)")
                 }
-                return
-            }
-            setFailed((error as NSError).localizedDescription)
-            if loggingEnabled {
-                print("[HomeVM] refresh() failed: \(error.localizedDescription)")
+
+                // Only apply results if this is still the latest refresh
+                guard taskID == self.refreshTaskID else {
+                    if loggingEnabled {
+                        print("[HomeVM] refresh() discard results; newer task exists id=\(self.refreshTaskID)")
+                    }
+                    return
+                }
+
+                self.current = current
+                self.forecast = forecast
+                self.setLoaded()
+                if loggingEnabled {
+                    print("[HomeVM] refresh() success id=\(taskID)")
+                }
+            } catch is CancellationError {
+                // If this task was cancelled, just go idle quietly.
+                self.setIdle()
+                if loggingEnabled {
+                    print("[HomeVM] refresh() cancelled id=\(taskID)")
+                }
+            } catch {
+                // Only show error if this is still the latest refresh
+                guard taskID == self.refreshTaskID else {
+                    if loggingEnabled {
+                        print("[HomeVM] refresh() error discarded; newer task exists id=\(self.refreshTaskID) err=\(error)")
+                    }
+                    return
+                }
+                self.setFailed((error as NSError).localizedDescription)
+                if loggingEnabled {
+                    print("[HomeVM] refresh() failed: \(error.localizedDescription)")
+                }
             }
         }
+
+        // Await completion so callers using `await model.refresh()` serialize correctly.
+        await currentRefreshTask?.value
+        currentRefreshTask = nil
     }
 
     // MARK: - Loading state helpers
@@ -205,7 +226,6 @@ final class HomeViewModel: ObservableObject {
 // Keep a mock for previews/dev if needed; production will inject WeatherAPIService via AppContainer.
 struct MockWeatherService: WeatherService {
     func fetchCurrentWeather(for city: String) async throws -> CurrentWeather {
-        // This mock is no longer used in production Home, but kept for previews.
         return CurrentWeather(
             city: city,
             temperature: 72,

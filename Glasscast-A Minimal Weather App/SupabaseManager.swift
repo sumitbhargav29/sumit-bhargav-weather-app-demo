@@ -28,16 +28,7 @@ final class SupabaseManager: ObservableObject {
         // Build options with explicit auth flow type and default keychain storage for auth.
         let options = SupabaseClientOptions(
             db: .init(),
-//            auth: .init(
-//                redirectToURL: nil,
-//                storageKey: nil,
-//                flowType: .implicit, // Switched to .implicit; try .pkce if your project requires it
-//                encoder: .init(),
-//                decoder: .init(),
-//                autoRefreshToken: AuthClient.Configuration.defaultAutoRefreshToken,
-//                emitLocalSessionAsInitialSession: true,
-//                accessToken: nil
-//            ),
+            
             auth: .init(
                 redirectToURL: nil,
                 storageKey: nil,
@@ -45,7 +36,7 @@ final class SupabaseManager: ObservableObject {
                 autoRefreshToken: AuthClient.Configuration.defaultAutoRefreshToken,
                 emitLocalSessionAsInitialSession: true
             ),
-
+            
             global: .init(),
             functions: .init(),
             realtime: .init(),

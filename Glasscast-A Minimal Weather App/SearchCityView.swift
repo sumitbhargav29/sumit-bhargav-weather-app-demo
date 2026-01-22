@@ -22,6 +22,10 @@ struct SearchCityView: View {
     // Use the shared FavoritesStore provided by the app
     @EnvironmentObject private var favorites: FavoritesStore
     @Environment(\.container) private var container
+    @EnvironmentObject private var selectedCity: SelectedCityStore
+    
+    // Binding to control the tab selection (so we can jump back to Home)
+    @Binding var selectedTab: Int
     
     // Keep a consistent background with app
     private let theme: WeatherTheme = .foggy
@@ -224,10 +228,17 @@ struct SearchCityView: View {
             } else {
                 VStack(spacing: 16) {
                     ForEach(favorites.favorites) { fav in
-                        favoriteRow(city: fav.city, id: fav.id, country: fav.country)
-                            .task(id: fav.id) {
-                                await fetchFavoriteWeatherIfNeeded(fav)
-                            }
+                        Button {
+                            // Set the selected city and switch to Home tab
+                            selectedCity.set(city: fav.city)
+                            selectedTab = 0
+                        } label: {
+                            favoriteRow(city: fav.city, id: fav.id, country: fav.country)
+                        }
+                        .buttonStyle(.plain)
+                        .task(id: fav.id) {
+                            await fetchFavoriteWeatherIfNeeded(fav)
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -320,21 +331,25 @@ struct SearchCityView: View {
                     VStack(spacing: 16) {
                         if !results.isEmpty {
                             ForEach(results) { city in
-                                resultRow(city: city)
-                                    .padding(.horizontal, 16)
-                                    .task(id: city.id) {
-                                        await fetchWeatherForResultIfNeeded(city)
-                                    }
+                                Button {
+                                    // Select result and go to Home
+                                    selectedCity.set(city: city.name)
+                                    selectedTab = 0
+                                } label: {
+                                    resultRow(city: city)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 16)
+                                .task(id: city.id) {
+                                    await fetchWeatherForResultIfNeeded(city)
+                                }
                             }
                         } else {
-                            // While typing with focus but no results yet, we can either show nothing
-                            // or a subtle hint. Requirement says to hide the previous prompt, so show nothing.
                             EmptyView()
                         }
                     }
                 }
             } else {
-                // When not focused or query empty, hide the whole section (including header and hint).
                 EmptyView()
             }
         }
@@ -537,8 +552,9 @@ struct SearchCityView: View {
 
 #Preview {
     NavigationStack {
-        SearchCityView()
+        SearchCityView(selectedTab: .constant(1))
             .environmentObject(FavoritesStore())
             .environment(\.container, AppContainer())
+            .environmentObject(SelectedCityStore())
     }
 }

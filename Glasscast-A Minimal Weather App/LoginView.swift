@@ -23,6 +23,8 @@ struct LoginView: View {
     @State private var probeOutput: String? = nil
     @State private var showProbeAlert: Bool = false
     
+    @Environment(\.container) private var container
+
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .coldSnowy
     
@@ -58,7 +60,9 @@ struct LoginView: View {
                         
                         // Invisible NavigationLink to HomeView, triggered by navigateToHome
                         NavigationLink(isActive: $navigateToHome) {
-                            TabContainerView()
+                            TabContainerView(homeModel: container.makeHomeViewModel())
+
+//                            TabContainerView()
                                 .navigationBarBackButtonHidden(true)
                         } label: {
                             EmptyView()

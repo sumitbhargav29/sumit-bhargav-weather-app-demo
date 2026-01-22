@@ -11,7 +11,8 @@ import CoreLocation
 
 struct HomeView: View {
     @Environment(\.container) private var container
-
+    @EnvironmentObject private var selectedCity: SelectedCityStore
+    
     @StateObject private var model: HomeViewModel
     @StateObject private var locator = LocationProvider()
     private let geocoder = CLGeocoder()
@@ -92,10 +93,27 @@ struct HomeView: View {
             guard let coord = locator.coordinate else { return }
             await updateCityFromCoordinate(coord)
         }
+        // Observe selection coming from Search tab
+        .onChange(of: selectedCity.city) { _, newValue in
+            guard let city = newValue, !city.isEmpty else { return }
+            Task {
+                // Cancel any in-flight refresh, set new city, and refresh immediately.
+                model.cancelRefresh()
+                let old = model.city
+                await MainActor.run { model.city = city }
+                if old.caseInsensitiveCompare(city) != .orderedSame {
+                    await model.refresh()
+                }
+            }
+        }
         .navigationBarBackButtonHidden(true)
     }
     
     private func updateCityFromCoordinate(_ coord: CLLocationCoordinate2D) async {
+        // If a city has been explicitly selected from Search, prefer that and skip location override
+        if let explicit = selectedCity.city, !explicit.isEmpty {
+            return
+        }
         do {
             let placemarks = try await geocoder.reverseGeocodeLocation(
                 CLLocation(latitude: coord.latitude, longitude: coord.longitude)
@@ -107,9 +125,9 @@ struct HomeView: View {
                 await model.refresh()
             }
         } catch {
-            #if DEBUG
+#if DEBUG
             print("[HomeView] reverseGeocode failed: \(error.localizedDescription)")
-            #endif
+#endif
         }
     }
     
@@ -329,7 +347,7 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                SunriseArc(progress: 0.55) // Optionally compute from localtime vs sunrise/sunset in future
+                SunriseArc(progress: 0.55)
                     .frame(width: 96, height: 56)
             }
         }
