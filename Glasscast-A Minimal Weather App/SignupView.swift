@@ -24,6 +24,7 @@ struct SignupView: View {
     @State private var errorMessage: String?
     @State private var successMessage: String?
     @State private var navigateToLogin = false
+    @Environment(\.container) private var container
     
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .sunny
@@ -310,7 +311,7 @@ struct SignupView: View {
         do {
             // Pass full name to user metadata so you can use it later.
             let metadata: [String: AnyJSON] = ["full_name": .string(fullName)]
-            let response = try await SupabaseManager.shared.client.auth.signUp(
+            let response = try await container.authService.client.auth.signUp(
                 email: email,
                 password: password,
                 data: metadata
@@ -318,12 +319,15 @@ struct SignupView: View {
 
             // If email confirmations are enabled, session will be nil and a confirmation email is sent.
             if response.session == nil {
+                HapticFeedback.success()
                 successMessage = "We sent a confirmation link to \(email). Please verify to finish creating your account."
             } else {
                 // If confirmations are disabled, user is signed in immediately.
+                HapticFeedback.success()
                 successMessage = "Account created successfully."
             }
         } catch {
+            HapticFeedback.error()
             errorMessage = (error as NSError).localizedDescription
         }
     }

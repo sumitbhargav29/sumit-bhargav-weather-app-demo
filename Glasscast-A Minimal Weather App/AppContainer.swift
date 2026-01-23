@@ -14,6 +14,7 @@ import Combine
 final class AppContainer: ObservableObject {
     let session: AppSession
     let favoritesStore: FavoritesStore
+    let authService: AuthService
 
     // Services
     let weatherService: WeatherService
@@ -25,9 +26,11 @@ final class AppContainer: ObservableObject {
         session: AppSession? = nil,
         favoritesStore: FavoritesStore? = nil,
         weatherService: WeatherService? = nil,
-        favoritingService: SupabaseFavoriting? = nil
+        favoritingService: SupabaseFavoriting? = nil,
+        authService: AuthService? = nil
     ) {
         let resolvedSession = session ?? AppSession()
+        let resolvedAuthService = authService ?? SupabaseAuthService()
         let resolvedFavoritingService = favoritingService ?? SupabaseService()
         // Inject real WeatherAPI service by default. Replace key with your real key or load from config.
         let defaultWeather = WeatherAPIService(apiKey: WeatherAPIService.defaultAPIKey)
@@ -39,6 +42,7 @@ final class AppContainer: ObservableObject {
         self.favoritesStore = resolvedFavoritesStore
         self.weatherService = resolvedWeatherService
         self.favoritingService = resolvedFavoritingService
+        self.authService = resolvedAuthService
 
         // Start in mock until we know auth state
         self.favoritesStore.mockMode = true

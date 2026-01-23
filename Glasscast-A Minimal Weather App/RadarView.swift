@@ -28,6 +28,7 @@ struct RadarView: View {
     
     // Favorites: use the shared store from the environment (same instance as SearchCityView)
     @EnvironmentObject private var favoritesStore: FavoritesStore
+    @Environment(\.container) private var container
     @State private var favoriteCoords: [String: CLLocationCoordinate2D] = [:] // city -> coord
     @State private var favoriteGeocodingInFlight: Set<String> = []
     
@@ -47,8 +48,8 @@ struct RadarView: View {
     @State private var isLoadingFavoriteWeather: Bool = false
     @State private var favoriteWeatherError: String?
     
-    // Service to fetch weather (reuse existing protocol with the mock)
-    private let weatherService: WeatherService = MockWeatherService()
+    // Service to fetch weather (resolved from the DI container)
+    private var weatherService: WeatherService { container.weatherService }
     private let geocoder = CLGeocoder()
     
     var body: some View {
@@ -74,6 +75,7 @@ struct RadarView: View {
                                     
                                     GlassMarker(icon: "location.fill")
                                         .onTapGesture {
+                                            HapticFeedback.light()
                                             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
                                                 showUserPopup.toggle()
                                             }
@@ -102,6 +104,7 @@ struct RadarView: View {
                                         }
                                         GlassMarker(icon: "star.fill")
                                             .onTapGesture {
+                                                HapticFeedback.light()
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
                                                     if selectedFavoriteCity == fav.city {
                                                         selectedFavoriteCity = nil
@@ -120,7 +123,8 @@ struct RadarView: View {
                             }
                         }
                     }
-                    .mapStyle(.standard(elevation: .realistic))
+                    // Use lighter map style for better performance
+                    .mapStyle(.standard(elevation: .flat))
                     // Mask the map so its corners follow the outer radius minus the inset
                     .mask(
                         RoundedRectangle(cornerRadius: cardCornerRadius - innerInset, style: .continuous)
@@ -130,7 +134,8 @@ struct RadarView: View {
                     .task(id: locator.coordinate?.latitude) {
                         if let coord = locator.coordinate {
                             userCoordinate = coord
-                            withAnimation(.easeInOut) {
+                            // Use shorter animation duration for better responsiveness
+                            withAnimation(.easeInOut(duration: 0.4)) {
                                 position = .region(
                                     MKCoordinateRegion(
                                         center: coord,
@@ -158,11 +163,13 @@ struct RadarView: View {
                         HStack {
                             Spacer()
                             Button {
+                                HapticFeedback.medium()
                                 Task {
                                     // Ensure permission flow starts if needed
                                     locator.requestWhenInUse()
                                     if let coord = userCoordinate {
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                                        // Faster animation for better responsiveness
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
                                             position = .region(
                                                 MKCoordinateRegion(
                                                     center: coord,
@@ -190,7 +197,8 @@ struct RadarView: View {
                                                     lineWidth: 1
                                                 )
                                         )
-                                        .liquidGlass(cornerRadius: 22, intensity: 0.24)
+                                        // Reduced intensity for better performance on map
+                                        .liquidGlass(cornerRadius: 22, intensity: 0.18)
                                         .shadow(color: .black.opacity(0.30), radius: 12, y: 6)
                                     
                                     Image(systemName: "location.circle.fill")
@@ -209,10 +217,30 @@ struct RadarView: View {
                     }
                     .allowsHitTesting(true)
                 }
-                .liquidGlass(cornerRadius: cardCornerRadius, intensity: 0.25)
+                // Use static glass effect instead of animated for map container (better performance)
+                .background {
+                    RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [
+                                            .white.opacity(0.35),
+                                            .clear,
+                                            .white.opacity(0.15)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        }
+                }
                 .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+                .shadow(color: .black.opacity(0.3), radius: 30, y: 20)
                 .frame(maxWidth: 800)
-                .frame(minHeight: 220) // ensure non-zero size for Metal-backed layers
+                .frame(minHeight: 220)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
@@ -288,6 +316,7 @@ struct RadarView: View {
                     .foregroundColor(.white)
                 Spacer()
                 Button {
+                    HapticFeedback.light()
                     withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
                         showUserPopup = false
                     }
@@ -355,7 +384,8 @@ struct RadarView: View {
                     )
                 )
         )
-        .liquidGlass(cornerRadius: 14, intensity: 0.30)
+        // Reduced intensity for popups on map for better performance
+        .liquidGlass(cornerRadius: 14, intensity: 0.22)
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(.white.opacity(0.25), lineWidth: 1)
@@ -373,6 +403,7 @@ struct RadarView: View {
                     .foregroundColor(.white)
                 Spacer()
                 Button {
+                    HapticFeedback.light()
                     withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
                         selectedFavoriteCity = nil
                         favoriteWeatherError = nil
@@ -439,7 +470,8 @@ struct RadarView: View {
                     )
                 )
         )
-        .liquidGlass(cornerRadius: 14, intensity: 0.30)
+        // Reduced intensity for popups on map for better performance
+        .liquidGlass(cornerRadius: 14, intensity: 0.22)
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(.white.opacity(0.25), lineWidth: 1)

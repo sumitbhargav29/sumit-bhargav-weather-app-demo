@@ -173,8 +173,7 @@ struct SearchCityView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 18)
-        // Neutral glass style
-        .glassSearchFieldStyle(cornerRadius: 22)
+        .liquidGlass(cornerRadius: 22, intensity: 0.30)
         .padding(.horizontal, 16)
     }
     
@@ -229,6 +228,7 @@ struct SearchCityView: View {
                 VStack(spacing: 16) {
                     ForEach(favorites.favorites) { fav in
                         Button {
+                            HapticFeedback.medium()
                             // Set the selected city and switch to Home tab
                             selectedCity.set(city: fav.city)
                             selectedTab = 0
@@ -298,6 +298,7 @@ struct SearchCityView: View {
             }
             
             Button {
+                HapticFeedback.light()
                 Task { await favorites.toggle(city: city, country: country) }
             } label: {
                 Image(systemName: "trash.fill")
@@ -309,7 +310,7 @@ struct SearchCityView: View {
         .frame(minHeight: 64)
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .glassCardTinted(cornerRadius: 24, city: city)
+        .liquidGlass(cornerRadius: 24, intensity: 0.35)
     }
     
     // MARK: - Results Section (real API search)
@@ -332,6 +333,7 @@ struct SearchCityView: View {
                         if !results.isEmpty {
                             ForEach(results) { city in
                                 Button {
+                                    HapticFeedback.medium()
                                     // Select result and go to Home
                                     selectedCity.set(city: city.name)
                                     selectedTab = 0
@@ -403,6 +405,7 @@ struct SearchCityView: View {
             }
             
             Button {
+                HapticFeedback.light()
                 Task {
                     await favorites.toggle(city: city.name, country: city.country, lat: city.lat, lon: city.lon)
                 }
@@ -416,7 +419,7 @@ struct SearchCityView: View {
         .frame(minHeight: 68)
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .glassCardTinted(cornerRadius: 26, city: city.name)
+        .liquidGlass(cornerRadius: 26, intensity: 0.35)
     }
     
     // MARK: - Debounced search using WeatherAPI

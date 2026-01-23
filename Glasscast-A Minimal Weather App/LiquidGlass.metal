@@ -31,12 +31,16 @@ float2 liquidRefraction(
     float time,
     float intensity
 ) {
-    float wave =
-        sin(position.y * 0.04 + time * 1.2) * 4.0 +
-        cos(position.x * 0.03 + time * 1.0) * 3.0;
-
+    // Optimized: Reduced frequency calculations and simplified wave computation
+    // Lower frequency means less computation per pixel
+    float yWave = sin(position.y * 0.03 + time * 0.8) * 3.5;
+    float xWave = cos(position.x * 0.025 + time * 0.7) * 2.5;
+    
+    // Combine waves more efficiently
+    float combinedWave = (yWave + xWave) * 0.5;
+    
     return float2(
-        wave * intensity,
-        wave * intensity * 0.6
+        combinedWave * intensity,
+        combinedWave * intensity * 0.6
     );
 }

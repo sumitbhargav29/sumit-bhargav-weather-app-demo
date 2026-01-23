@@ -31,6 +31,7 @@ struct SettingsView: View {
     
     // Observe Supabase auth
     @StateObject private var auth = SupabaseManager.shared
+    @Environment(\.container) private var container
     
     // Cached profile values populated asynchronously
     @State private var profileDisplayName: String = "User"
@@ -165,11 +166,12 @@ struct SettingsView: View {
             }
             // Option A: Use an alert so it appears centered on all devices
             .alert("Are you sure you want to sign out?", isPresented: $showConfirmSignOut) {
-                Button("Cancel", role: .cancel) { }
-                Button("Sign Out", role: .destructive) {
-                    performSignOut()
-                }
-            } message: {
+            Button("Cancel", role: .cancel) { }
+            Button("Sign Out", role: .destructive) {
+                HapticFeedback.medium()
+                performSignOut()
+            }
+        } message: {
                 Text("You will need to sign in again to access your account.")
             }
         }
@@ -438,7 +440,7 @@ struct SettingsView: View {
         isSigningOut = true
         Task {
             do {
-                try await SupabaseManager.shared.signOut()
+                try await container.authService.signOut()
             } catch {
                 // If sign-out fails, we’ll still try to move on after brief delay
             }
@@ -455,7 +457,7 @@ struct SettingsView: View {
     
     private func refreshProfileFromSession() async {
         // Try to read session; if unavailable, reset to defaults.
-        guard let session = try? await auth.client.auth.session else {
+        guard let session = try? await container.authService.client.auth.session else {
             await MainActor.run {
                 profileDisplayName = "User"
                 profileEmail = "(no email)"

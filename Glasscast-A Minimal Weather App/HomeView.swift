@@ -30,10 +30,6 @@ struct HomeView: View {
         model.current?.theme ?? .sunny
     }
     
-    init() {
-        _model = StateObject(wrappedValue: HomeViewModel())
-    }
-    
     init(model: HomeViewModel) {
         _model = StateObject(wrappedValue: model)
     }
@@ -73,6 +69,7 @@ struct HomeView: View {
                     .frame(maxWidth: 700)
                 }
                 .refreshable {
+                    HapticFeedback.medium()
                     await model.refresh()
                 }
             }
@@ -264,6 +261,7 @@ struct HomeView: View {
                         .tint(.cyan)
                 } else {
                     Button {
+                        HapticFeedback.medium()
                         Task { await model.refresh() }
                     } label: {
                         Label("Refresh", systemImage: "arrow.clockwise.circle.fill")
@@ -581,5 +579,5 @@ private struct Arc: Shape {
 }
 
 #Preview {
-    HomeView()
+    HomeView(model: HomeViewModel(service: MockWeatherService()))
 }

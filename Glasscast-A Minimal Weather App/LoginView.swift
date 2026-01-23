@@ -24,6 +24,7 @@ struct LoginView: View {
     @State private var showProbeAlert: Bool = false
     
     @Environment(\.container) private var container
+    private var authService: AuthService { container.authService }
 
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .coldSnowy
@@ -315,23 +316,26 @@ struct LoginView: View {
         
         Task {
             do {
-                try await SupabaseManager.shared.signIn(email: email, password: password)
+                try await authService.signIn(email: email, password: password)
                 // On success, navigate to the main app
                 await MainActor.run {
+                    HapticFeedback.success()
                     isSigningIn = false
                     navigateToHome = true
                 }
             } catch {
                 // Try fallback path
                 do {
-                    try await SupabaseManager.shared.signInFallback(email: email, password: password)
+                    try await authService.signInFallback(email: email, password: password)
                     await MainActor.run {
+                        HapticFeedback.success()
                         isSigningIn = false
                         navigateToHome = true
                     }
                 } catch {
                     let friendly = friendlyAuthError(from: error)
                     await MainActor.run {
+                        HapticFeedback.error()
                         isSigningIn = false
                         presentError(friendly)
                     }
