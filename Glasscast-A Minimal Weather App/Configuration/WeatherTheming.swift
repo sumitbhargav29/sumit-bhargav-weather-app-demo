@@ -8,7 +8,6 @@
 import SwiftUI
 
 // MARK: - Theme Model
-
 enum WeatherTheme: CaseIterable, Equatable {
     case sunny
     case rainy

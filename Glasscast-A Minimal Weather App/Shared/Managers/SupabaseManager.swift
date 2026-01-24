@@ -15,8 +15,8 @@ final class SupabaseManager: ObservableObject {
     
     // Configure with your Supabase project URL and anon key.
     // NOTE: For production, consider moving secrets into configuration.
-    private let supabaseURL = URL(string: "https://gkhjjokrsiuyqcmpjcmw.supabase.co")!
-    private let supabaseAnonKey = "sb_publishable_kpJ_2UmkDA8QwugO5JTApQ_2GVu-L-0"
+    private let supabaseURL = AppConstants.Supabase.projectURL
+    private let supabaseAnonKey = AppConstants.Supabase.anonKey
     
     let client: SupabaseClient
     
@@ -54,10 +54,10 @@ final class SupabaseManager: ObservableObject {
             for await (event, session) in client.auth.authStateChanges {
                 // Log event + user info
                 if let s = session {
-                    print("[Supabase] authStateChanges event=\(event.rawValue)")
+                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue)")
                     Self.logSession(prefix: "Auth Event \(event.rawValue)", session: s)
                 } else {
-                    print("[Supabase] authStateChanges event=\(event.rawValue), session=nil")
+                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue), session=nil")
                 }
                 
                 await MainActor.run {
@@ -66,22 +66,22 @@ final class SupabaseManager: ObservableObject {
                 }
                 
                 // Summarize current auth flags
-                print("[Supabase] isAuthenticated=\(self.isAuthenticated), currentUserID=\(self.currentUserID?.uuidString ?? "nil")")
+                print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(self.isAuthenticated), currentUserID=\(self.currentUserID?.uuidString ?? "nil")")
             }
         }
         
         // Try to load any existing session immediately
         Task {
-            print("[Supabase] Checking initial session…")
+            print("\(AppConstants.Supabase.logPrefix) Checking initial session…")
             if let session = try? await client.auth.session {
                 Self.logSession(prefix: "Initial session", session: session)
                 await MainActor.run {
                     self.currentUserID = session.user.id
                     self.isAuthenticated = !session.isExpired
                 }
-                print("[Supabase] Initial isAuthenticated=\(self.isAuthenticated)")
+                print("\(AppConstants.Supabase.logPrefix) Initial isAuthenticated=\(self.isAuthenticated)")
             } else {
-                print("[Supabase] Initial session: none")
+                print("\(AppConstants.Supabase.logPrefix) Initial session: none")
                 await MainActor.run {
                     self.currentUserID = nil
                     self.isAuthenticated = false
@@ -102,14 +102,14 @@ final class SupabaseManager: ObservableObject {
     
     // Convenience sign-in / sign-out wrappers (call these from Login/Settings screens)
     func signIn(email: String, password: String) async throws {
-        print("[Supabase] signIn started for email=\(email)")
+        print("\(AppConstants.Supabase.logPrefix) signIn started for email=\(email)")
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             Self.logSession(prefix: "Sign in response", session: session)
-            print("[Supabase] signIn success. isExpired=\(session.isExpired)")
+            print("\(AppConstants.Supabase.logPrefix) signIn success. isExpired=\(session.isExpired)")
         } catch {
             let ns = error as NSError
-            print("[Supabase] signIn failed: \(error.localizedDescription) domain=\(ns.domain) code=\(ns.code) userInfo=\(ns.userInfo)")
+            print("\(AppConstants.Supabase.logPrefix) signIn failed: \(error.localizedDescription) domain=\(ns.domain) code=\(ns.code) userInfo=\(ns.userInfo)")
             throw error
         }
         // authStateChanges will update currentUserID/isAuthenticated
@@ -117,30 +117,30 @@ final class SupabaseManager: ObservableObject {
     
     // Fallback sign-in: use REST password grant, then set session into SDK.
     func signInFallback(email: String, password: String) async throws {
-        print("[Supabase] signInFallback started for email=\(email)")
+        print("\(AppConstants.Supabase.logPrefix) signInFallback started for email=\(email)")
         let (accessToken, refreshToken) = try await fetchTokensViaREST(email: email, password: password)
         do {
             try await client.auth.setSession(accessToken: accessToken, refreshToken: refreshToken)
-            print("[Supabase] signInFallback setSession succeeded")
+            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession succeeded")
             // authStateChanges will update currentUserID/isAuthenticated
         } catch {
-            print("[Supabase] signInFallback setSession failed: \(error.localizedDescription)")
+            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession failed: \(error.localizedDescription)")
             throw error
         }
     }
     
     private func fetchTokensViaREST(email: String, password: String) async throws -> (String, String) {
-        let url = supabaseURL.appendingPathComponent("auth/v1/token")
+        let url = supabaseURL.appendingPathComponent(AppConstants.Supabase.authTokenPath)
         var comps = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-        comps.queryItems = [URLQueryItem(name: "grant_type", value: "password")]
+        comps.queryItems = [URLQueryItem(name: AppConstants.Supabase.grantTypeKey, value: AppConstants.Supabase.grantTypePassword)]
         guard let finalURL = comps.url else {
             throw URLError(.badURL)
         }
         
         var request = URLRequest(url: finalURL)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue(AppConstants.Supabase.contentTypeJSON, forHTTPHeaderField: AppConstants.Supabase.headerContentType)
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: AppConstants.Supabase.headerAPIKey)
         
         let body: [String: Any] = [
             "email": email,
@@ -152,9 +152,9 @@ final class SupabaseManager: ObservableObject {
         let status = (response as? HTTPURLResponse)?.statusCode ?? -1
         
         guard (200..<300).contains(status) else {
-            let text = String(data: data, encoding: .utf8) ?? "<non-UTF8 body, \(data.count) bytes>"
-            print("[Supabase Fallback] HTTP \(status) body=\(text)")
-            throw NSError(domain: "SupabaseFallback", code: status, userInfo: [NSLocalizedDescriptionKey: "Sign-in failed (HTTP \(status))."])
+            let text = String(data: data, encoding: .utf8) ?? "<\(AppConstants.Logging.nonUTF8Body), \(data.count) bytes>"
+            print("\(AppConstants.Supabase.fallbackLogPrefix) \(AppConstants.Logging.httpPrefix) \(status) body=\(text)")
+            throw NSError(domain: "SupabaseFallback", code: status, userInfo: [NSLocalizedDescriptionKey: "Sign-in failed (\(AppConstants.Logging.httpPrefix) \(status))."])
         }
         
         struct TokenResponse: Decodable {
@@ -178,12 +178,12 @@ final class SupabaseManager: ObservableObject {
     }
     
     func signOut() async throws {
-        print("[Supabase] signOut started")
+        print("\(AppConstants.Supabase.logPrefix) signOut started")
         do {
             try await client.auth.signOut()
-            print("[Supabase] Signed out successfully.")
+            print("\(AppConstants.Supabase.logPrefix) Signed out successfully.")
         } catch {
-            print("[Supabase] signOut failed: \(error.localizedDescription)")
+            print("\(AppConstants.Supabase.logPrefix) signOut failed: \(error.localizedDescription)")
             throw error
         }
         // authStateChanges will update currentUserID/isAuthenticated
@@ -194,17 +194,17 @@ final class SupabaseManager: ObservableObject {
     // Raw REST probe to inspect backend JSON for password grant.
     // Returns the raw JSON string (success or error) for debugging.
     func rawSignInProbe(email: String, password: String) async throws -> String {
-        let url = supabaseURL.appendingPathComponent("auth/v1/token")
+        let url = supabaseURL.appendingPathComponent(AppConstants.Supabase.authTokenPath)
         var comps = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-        comps.queryItems = [URLQueryItem(name: "grant_type", value: "password")]
+        comps.queryItems = [URLQueryItem(name: AppConstants.Supabase.grantTypeKey, value: AppConstants.Supabase.grantTypePassword)]
         guard let finalURL = comps.url else {
             throw URLError(.badURL)
         }
         
         var request = URLRequest(url: finalURL)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue(AppConstants.Supabase.contentTypeJSON, forHTTPHeaderField: AppConstants.Supabase.headerContentType)
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: AppConstants.Supabase.headerAPIKey)
         
         let body: [String: Any] = [
             "email": email,
@@ -215,11 +215,11 @@ final class SupabaseManager: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? -1
         
-        let text = String(data: data, encoding: .utf8) ?? "<non-UTF8 body, \(data.count) bytes>"
-        print("[Supabase Probe] status=\(status) body=\(text)")
+        let text = String(data: data, encoding: .utf8) ?? "<\(AppConstants.Logging.nonUTF8Body), \(data.count) bytes>"
+        print("\(AppConstants.Supabase.probeLogPrefix) status=\(status) body=\(text)")
         
         // Surface both status and body to caller
-        return "HTTP \(status)\n\(text)"
+        return "\(AppConstants.Logging.httpPrefix) \(status)\n\(text)"
     }
     
     // Call this from anywhere to print current auth status and session snippet.
@@ -228,9 +228,9 @@ final class SupabaseManager: ObservableObject {
             do {
                 if let session = try? await client.auth.session {
                     Self.logSession(prefix: "Current session", session: session)
-                    print("[Supabase] isAuthenticated=\(!session.isExpired)")
+                    print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(!session.isExpired)")
                 } else {
-                    print("[Supabase] No current session. isAuthenticated=false")
+                    print("\(AppConstants.Supabase.logPrefix) No current session. isAuthenticated=false")
                 }
             }
         }
@@ -243,7 +243,7 @@ final class SupabaseManager: ObservableObject {
         let email = user.email ?? "(no email)"
         let expiresAt = Date(timeIntervalSince1970: session.expiresAt)
         print("""
-        [Supabase] \(prefix):
+        \(AppConstants.Supabase.logPrefix) \(prefix):
           user.id: \(user.id.uuidString)
           user.email: \(email)
           tokenType: \(session.tokenType)
@@ -256,3 +256,4 @@ final class SupabaseManager: ObservableObject {
     var anonKey: String { supabaseAnonKey }
     var projectURL: URL { supabaseURL }
 }
+

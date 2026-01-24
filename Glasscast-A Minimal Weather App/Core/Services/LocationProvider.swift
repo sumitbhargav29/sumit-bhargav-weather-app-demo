@@ -10,7 +10,7 @@ import CoreLocation
 import Combine
 
 @MainActor
-final class LocationProvider: NSObject, ObservableObject {
+final class LocationProvider: NSObject, LocationService {
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var coordinate: CLLocationCoordinate2D?
     

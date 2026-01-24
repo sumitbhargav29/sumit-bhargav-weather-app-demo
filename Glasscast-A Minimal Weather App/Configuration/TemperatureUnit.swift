@@ -3,7 +3,7 @@ import SwiftUI
 
 enum TemperatureUnit {
     // Single source of truth for the unit preference across the app
-    @AppStorage("useCelsius") private static var useCelsius: Bool = true
+    @AppStorage(AppConstants.StorageKeys.useCelsius) private static var useCelsius: Bool = true
 
     // Convert a Fahrenheit integer to preferred unit
     static func convert(_ f: Int) -> Int {
@@ -24,8 +24,8 @@ enum TemperatureUnit {
 
     // Unit label for display
     static var unitLabel: String {
-//        useCelsius ? "°C" : "°F"
+        // useCelsius ? "°C" : "°F"
         useCelsius ? "C" : "F"
-
     }
 }
+
