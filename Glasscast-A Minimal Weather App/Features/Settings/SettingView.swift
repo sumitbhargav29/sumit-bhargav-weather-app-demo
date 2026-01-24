@@ -16,13 +16,13 @@ struct SettingsView: View {
     private let theme: WeatherTheme = .sunny
     
     // Persist temperature unit preference
-    @AppStorage("useCelsius") private var useCelsius: Bool = true
+    @AppStorage(AppConstants.StorageKeys.useCelsius) private var useCelsius: Bool = true
     
     // New persisted preferences
-    @AppStorage("windUnitIsKmh") private var windUnitIsKmh: Bool = true // true: km/h, false: mph
-    @AppStorage("pressureUnitIsHpa") private var pressureUnitIsHpa: Bool = true // true: hPa, false: inHg
-    @AppStorage("notificationsSevereAlerts") private var severeAlerts: Bool = true
-    @AppStorage("notificationsDailySummary") private var dailySummary: Bool = false
+    @AppStorage(AppConstants.StorageKeys.windUnitIsKmh) private var windUnitIsKmh: Bool = true // true: km/h, false: mph
+    @AppStorage(AppConstants.StorageKeys.pressureUnitIsHpa) private var pressureUnitIsHpa: Bool = true // true: hPa, false: inHg
+    @AppStorage(AppConstants.StorageKeys.notificationsSevereAlerts) private var severeAlerts: Bool = true
+    @AppStorage(AppConstants.StorageKeys.notificationsDailySummary) private var dailySummary: Bool = false
     
     // Color scheme preference
     @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
@@ -42,8 +42,8 @@ struct SettingsView: View {
     @Environment(\.container) private var container
     
     // Cached profile values populated asynchronously
-    @State private var profileDisplayName: String = "User"
-    @State private var profileEmail: String = "(no email)"
+    @State private var profileDisplayName: String = AppConstants.UI.profileDefaultName
+    @State private var profileEmail: String = AppConstants.UI.profileNoEmail
     @State private var profileIsPremium: Bool = false
     
     var body: some View {
@@ -67,43 +67,43 @@ struct SettingsView: View {
                     profileCard
                     
                     // Weather Units section
-                    sectionHeader(title: "Weather Units")
+                    sectionHeader(title: AppConstants.UI.sectionWeatherUnits)
                     VStack(spacing: 12) {
                         settingsRow(
-                            icon: "thermometer.medium",
-                            title: "Temperature",
-                            subtitle: "Choose between Celsius and Fahrenheit",
+                            icon: AppConstants.Symbols.thermometerMedium,
+                            title: AppConstants.UI.temperatureTitle,
+                            subtitle: AppConstants.UI.temperatureSubtitle,
                             trailing: AnyView(
                                 unitToggle(
                                     isOn: $useCelsius,
-                                    onLabel: "°C",
-                                    offLabel: "°F"
+                                    onLabel: AppConstants.UI.tempC,
+                                    offLabel: AppConstants.UI.tempF
                                 )
                             )
                         )
                         
                         settingsRow(
-                            icon: "wind",
-                            title: "Wind Speed",
-                            subtitle: "Display in km/h or mph",
+                            icon: AppConstants.Symbols.wind,
+                            title: AppConstants.UI.windSpeedTitle,
+                            subtitle: AppConstants.UI.windSpeedSubtitle,
                             trailing: AnyView(
                                 unitToggle(
                                     isOn: $windUnitIsKmh,
-                                    onLabel: "km/h",
-                                    offLabel: "mph"
+                                    onLabel: AppConstants.UI.kmh,
+                                    offLabel: AppConstants.UI.mph
                                 )
                             )
                         )
                         
                         settingsRow(
-                            icon: "gauge.with.dots.needle.bottom.50percent",
-                            title: "Pressure",
-                            subtitle: "Display in hPa or inHg",
+                            icon: AppConstants.Symbols.gauge,
+                            title: AppConstants.UI.pressureTitle,
+                            subtitle: AppConstants.UI.pressureSubtitle,
                             trailing: AnyView(
                                 unitToggle(
                                     isOn: $pressureUnitIsHpa,
-                                    onLabel: "hPa",
-                                    offLabel: "inHg"
+                                    onLabel: AppConstants.UI.hPa,
+                                    offLabel: AppConstants.UI.inHg
                                 )
                             )
                         )
@@ -111,26 +111,26 @@ struct SettingsView: View {
                     .padding(.horizontal, 16)
                     
                     // Appearance section
-                    sectionHeader(title: "Appearance")
+                    sectionHeader(title: AppConstants.UI.sectionAppearance)
                     VStack(spacing: 12) {
                         appearanceModeRow
                     }
                     .padding(.horizontal, 16)
                     
                     // Notifications section
-                    sectionHeader(title: "Notifications")
+                    sectionHeader(title: AppConstants.UI.sectionNotifications)
                     VStack(spacing: 12) {
                         toggleRow(
-                            icon: "exclamationmark.triangle.fill",
-                            title: "Severe Alerts",
-                            subtitle: "Get notified for severe weather",
+                            icon: AppConstants.Symbols.exclamationTriangleFill,
+                            title: AppConstants.UI.severeAlerts,
+                            subtitle: AppConstants.UI.severeAlertsSubtitle,
                             isOn: $severeAlerts
                         )
                         
                         toggleRow(
-                            icon: "sun.max.trianglebadge.exclamationmark",
-                            title: "Daily Summary",
-                            subtitle: "Receive a daily weather digest",
+                            icon: AppConstants.Symbols.sunMaxTriangleExclamation,
+                            title: AppConstants.UI.dailySummary,
+                            subtitle: AppConstants.UI.dailySummarySubtitle,
                             isOn: $dailySummary
                         )
                     }
@@ -146,27 +146,17 @@ struct SettingsView: View {
                                 if isSigningOut {
                                     ProgressView().tint(.white)
                                 } else {
-                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    Image(systemName: AppConstants.Symbols.rectanglePortraitArrowRight)
                                         .foregroundStyle(Color.red)
                                         .font(.headline)
                                 }
-                                Text(isSigningOut ? "Signing Out..." : "Sign Out")
+                                Text(isSigningOut ? AppConstants.UI.signingOut : AppConstants.UI.signOut)
                                     .foregroundStyle(Color.red)
                                     .font(.headline.bold())
                             }
                             .foregroundColor(adaptiveForeground())
                             .frame(maxWidth: .infinity)
                             .padding()
-                            //                            .background(
-                            //                                LinearGradient(
-                            //                                    colors: [
-                            //                                        Color.red.opacity(0.95),
-                            //                                        Color.pink.opacity(0.85)
-                            //                                    ],
-                            //                                    startPoint: .topLeading,
-                            //                                    endPoint: .bottomTrailing
-                            //                                )
-                            //                            )
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .shadow(color: .red.opacity(0.45), radius: 20, y: 8)
                         }
@@ -184,14 +174,14 @@ struct SettingsView: View {
                 .padding(.bottom, 24)
             }
             // Option A: Use an alert so it appears centered on all devices
-            .alert("Are you sure you want to sign out?", isPresented: $showConfirmSignOut) {
-            Button("Cancel", role: .cancel) { }
-            Button("Sign Out", role: .destructive) {
+            .alert(AppConstants.UI.signOutConfirmTitle, isPresented: $showConfirmSignOut) {
+            Button(AppConstants.UI.cancel, role: .cancel) { }
+            Button(AppConstants.UI.signOutDestructive, role: .destructive) {
                 HapticFeedback.medium()
                 performSignOut()
             }
         } message: {
-                Text("You will need to sign in again to access your account.")
+                Text(AppConstants.UI.signOutConfirmMessage)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -211,7 +201,7 @@ struct SettingsView: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 44, height: 44)
                 .overlay {
-                    Image(systemName: "gearshape.fill")
+                    Image(systemName: AppConstants.Symbols.gearshapeFill)
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(LinearGradient(
                             colors: [.cyan, .blue],
@@ -222,10 +212,10 @@ struct SettingsView: View {
                 .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Settings")
+                Text(AppConstants.UI.settingsTitle)
                     .font(.system(.title3, design: .rounded).weight(.bold))
                     .foregroundColor(adaptiveForeground())
-                Text("Basic preferences")
+                Text(AppConstants.UI.settingsSubtitle)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
@@ -245,7 +235,7 @@ struct SettingsView: View {
                     .frame(width: 64, height: 64)
                     .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
                 
-                Image(systemName: "person.crop.circle.fill")
+                Image(systemName: AppConstants.Symbols.personCropCircleFill)
                     .font(.system(size: 58))
                     .foregroundStyle(LinearGradient(
                         colors: [.cyan, .blue],
@@ -260,7 +250,7 @@ struct SettingsView: View {
                         .fill(Color.blue)
                         .frame(width: 18, height: 18)
                         .overlay {
-                            Image(systemName: "checkmark.seal.fill")
+                            Image(systemName: AppConstants.Symbols.checkmarkSealFill)
                                 .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(adaptiveForeground())
                         }
@@ -279,7 +269,7 @@ struct SettingsView: View {
                     .foregroundColor(adaptiveForeground(opacity: 0.75))
                 
                 if profileIsPremium {
-                    Text("PREMIUM GLASS ACCOUNT")
+                    Text(AppConstants.UI.premiumBadge)
                         .font(.caption2.weight(.semibold))
                         .foregroundColor(adaptiveForeground(opacity: 0.9))
                         .padding(.vertical, 4)
@@ -302,7 +292,6 @@ struct SettingsView: View {
             Spacer()
         }
         .padding(16)
-//        .liquidGlass(cornerRadius: 20, intensity: 0.40)
         .glassEffect()
          .padding(.horizontal, 16)
     }
@@ -347,7 +336,6 @@ struct SettingsView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
         .glassEffect()
     }
     
@@ -369,16 +357,16 @@ struct SettingsView: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 36, height: 36)
                 .overlay {
-                    Image(systemName: colorSchemeManager.isDarkMode ? "moon.fill" : colorSchemeManager.isLightMode ? "sun.max.fill" : "circle.lefthalf.filled")
+                    Image(systemName: colorSchemeManager.isDarkMode ? AppConstants.Symbols.moonFill : colorSchemeManager.isLightMode ? AppConstants.Symbols.sunMaxFill : AppConstants.Symbols.circleLeftHalfFilled)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(adaptiveForeground(opacity: 0.9))
                 }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Appearance Mode")
+                Text(AppConstants.UI.appearanceMode)
                     .foregroundColor(adaptiveForeground())
                     .font(.subheadline.bold())
-                Text(colorSchemeManager.isDarkMode ? "Dark Mode" : colorSchemeManager.isLightMode ? "Light Mode" : "System")
+                Text(colorSchemeManager.isDarkMode ? AppConstants.UI.darkMode : colorSchemeManager.isLightMode ? AppConstants.UI.lightMode : AppConstants.UI.systemMode)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
@@ -391,9 +379,9 @@ struct SettingsView: View {
                     colorSchemeManager.setLightMode()
                 } label: {
                     HStack {
-                        Text("Light Mode")
+                        Text(AppConstants.UI.lightMode)
                         if colorSchemeManager.isLightMode {
-                            Image(systemName: "checkmark")
+                            Image(systemName: AppConstants.Symbols.checkmark)
                         }
                     }
                 }
@@ -403,9 +391,9 @@ struct SettingsView: View {
                     colorSchemeManager.setDarkMode()
                 } label: {
                     HStack {
-                        Text("Dark Mode")
+                        Text(AppConstants.UI.darkMode)
                         if colorSchemeManager.isDarkMode {
-                            Image(systemName: "checkmark")
+                            Image(systemName: AppConstants.Symbols.checkmark)
                         }
                     }
                 }
@@ -415,18 +403,18 @@ struct SettingsView: View {
                     colorSchemeManager.setSystemMode()
                 } label: {
                     HStack {
-                        Text("System")
+                        Text(AppConstants.UI.systemMode)
                         if !colorSchemeManager.isDarkMode && !colorSchemeManager.isLightMode {
-                            Image(systemName: "checkmark")
+                            Image(systemName: AppConstants.Symbols.checkmark)
                         }
                     }
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(colorSchemeManager.isDarkMode ? "Dark" : colorSchemeManager.isLightMode ? "Light" : "System")
+                    Text(colorSchemeManager.isDarkMode ? AppConstants.UI.darkShort : colorSchemeManager.isLightMode ? AppConstants.UI.lightShort : AppConstants.UI.systemMode)
                         .font(.caption.weight(.semibold))
                         .foregroundColor(adaptiveForeground(opacity: 0.85))
-                    Image(systemName: "chevron.down")
+                    Image(systemName: AppConstants.Symbols.chevronDown)
                         .font(.caption2)
                         .foregroundColor(adaptiveForeground(opacity: 0.65))
                 }
@@ -440,7 +428,6 @@ struct SettingsView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
         .glassEffect()
     }
     
@@ -472,7 +459,6 @@ struct SettingsView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
         .glassEffect()
     }
     
@@ -506,7 +492,6 @@ struct SettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
         .glassEffect()
     }
     
@@ -528,10 +513,10 @@ struct SettingsView: View {
     
     private var footer: some View {
         VStack(spacing: 4) {
-            Text("Demo by Sumit bhargav")
+            Text(AppConstants.UI.footerName)
                 .font(.caption2.weight(.semibold))
                 .foregroundColor(adaptiveForeground(opacity: 0.55))
-            Text("sumitbhargav2994@gmail.com")
+            Text(AppConstants.UI.footerEmail)
                 .font(.caption2)
                 .foregroundColor(adaptiveForeground(opacity: 0.45))
         }
@@ -563,16 +548,16 @@ struct SettingsView: View {
         // Try to read session; if unavailable, reset to defaults.
         guard let session = try? await container.authService.client.auth.session else {
             await MainActor.run {
-                profileDisplayName = "User"
-                profileEmail = "(no email)"
+                profileDisplayName = AppConstants.UI.profileDefaultName
+                profileEmail = AppConstants.UI.profileNoEmail
                 profileIsPremium = false
             }
             return
         }
         
         let user = session.user
-        let email = user.email ?? "(no email)"
-        var display = "User"
+        let email = user.email ?? AppConstants.UI.profileNoEmail
+        var display = AppConstants.UI.profileDefaultName
         
         // Safely parse metadata using AnyJSON helpers
         var isPremium = false
@@ -598,7 +583,7 @@ struct SettingsView: View {
             isPremium = (premiumString as NSString).boolValue
         }
         
-        if display == "User", let e = user.email {
+        if display == AppConstants.UI.profileDefaultName, let e = user.email {
             let local = e.split(separator: "@").first.map(String.init) ?? e
             if !local.isEmpty {
                 display = local

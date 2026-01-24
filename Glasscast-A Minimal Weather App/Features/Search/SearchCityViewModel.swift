@@ -111,7 +111,7 @@ final class SearchCityViewModel: ObservableObject {
         if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
             throw CitySearchError.http(
                 http.statusCode,
-                String(data: data, encoding: .utf8) ?? "Unknown"
+                String(data: data, encoding: .utf8) ?? AppConstants.WeatherAPI.unknown
             )
         }
         

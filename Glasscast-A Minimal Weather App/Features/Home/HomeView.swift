@@ -23,12 +23,12 @@ struct HomeView: View {
     private let geocoder = CLGeocoder()
     
     // Units
-    @AppStorage("windUnitIsKmh") private var windUnitIsKmh: Bool = true
-    @AppStorage("pressureUnitIsHpa") private var pressureUnitIsHpa: Bool = true
-    @AppStorage("useCelsius") private var useCelsius: Bool = true
+    @AppStorage(AppConstants.StorageKeys.windUnitIsKmh) private var windUnitIsKmh: Bool = true
+    @AppStorage(AppConstants.StorageKeys.pressureUnitIsHpa) private var pressureUnitIsHpa: Bool = true
+    @AppStorage(AppConstants.StorageKeys.useCelsius) private var useCelsius: Bool = true
     // Notifications
-    @AppStorage("notificationsSevereAlerts") private var severeAlerts: Bool = true
-    @AppStorage("notificationsDailySummary") private var dailySummary: Bool = false
+    @AppStorage(AppConstants.StorageKeys.notificationsSevereAlerts) private var severeAlerts: Bool = true
+    @AppStorage(AppConstants.StorageKeys.notificationsDailySummary) private var dailySummary: Bool = false
     
     // Background theme
     private let theme: WeatherTheme = .sunny
@@ -123,7 +123,7 @@ struct HomeView: View {
             let placemarks = try await geocoder.reverseGeocodeLocation(
                 CLLocation(latitude: coord.latitude, longitude: coord.longitude)
             )
-            let city = placemarks.first?.locality ?? placemarks.first?.name ?? "Current Location"
+            let city = placemarks.first?.locality ?? placemarks.first?.name ?? AppConstants.UI.currentLocation
             let old = model.city
             await MainActor.run { model.city = city }
             if old.caseInsensitiveCompare(city) != .orderedSame {
@@ -142,7 +142,7 @@ struct HomeView: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 44, height: 44)
                 .overlay {
-                    Image(systemName: "cloud.sun.fill")
+                    Image(systemName: AppConstants.Symbols.cloudSunFill)
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(LinearGradient(
                             colors: [.cyan, .blue],
@@ -153,10 +153,10 @@ struct HomeView: View {
                 .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("Glasscast")
+                Text(AppConstants.UI.homeTitle)
                     .font(.system(.title3, design: .rounded).weight(.bold))
                     .foregroundColor(adaptiveForeground())
-                Text("A Minimal Weather App")
+                Text(AppConstants.UI.homeSubtitle)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
@@ -172,7 +172,7 @@ struct HomeView: View {
                         .fill(.ultraThinMaterial)
                         .frame(width: 36, height: 36)
                         .overlay {
-                            Image(systemName: severeAlerts ? "exclamationmark.triangle.fill" : "bell.fill")
+                            Image(systemName: severeAlerts ? AppConstants.Symbols.exclamationTriangleFill : "bell.fill")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(severeAlerts ? .red.opacity(0.95) : adaptiveForeground(opacity: 0.95))
                         }
@@ -223,7 +223,7 @@ struct HomeView: View {
         VStack(spacing: 16) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(model.current?.city ?? "Loading...")
+                    Text(model.current?.city ?? AppConstants.UI.loadingEllipsis)
                         .font(.headline.bold())
                         .foregroundColor(adaptiveForeground())
                     
@@ -235,7 +235,7 @@ struct HomeView: View {
                         }
                         if let high = model.current?.high, let low = model.current?.low {
                             let (h, l) = TemperatureUnit.convert(high: high, low: low)
-                            Text("H \(h)°  L \(l)°")
+                            Text("\(AppConstants.UI.highAbbrev) \(h)°  \(AppConstants.UI.lowAbbrev) \(l)°")
                                 .font(.caption.weight(.semibold))
                                 .foregroundColor(adaptiveForeground(opacity: 0.7))
                         }
@@ -248,7 +248,7 @@ struct HomeView: View {
                     Image(systemName: symbol)
                         .font(.system(size: 36, weight: .semibold))
                         .foregroundStyle(
-                            (effectiveScheme == .light && symbol == "sun.max.fill")
+                            (effectiveScheme == .light && symbol == AppConstants.Symbols.sunMaxFill)
                             ? AnyShapeStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(adaptiveForeground())
                         )
@@ -283,7 +283,7 @@ struct HomeView: View {
                         HapticFeedback.medium()
                         Task { await model.refresh() }
                     } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise.circle.fill")
+                        Label(AppConstants.UI.refresh, systemImage: AppConstants.Symbols.arrowClockwiseCircleFill)
                             .font(.subheadline.bold())
                             .foregroundColor(adaptiveForeground())
                     }
@@ -298,7 +298,7 @@ struct HomeView: View {
     
     private var forecastStrip: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("5-Day Forecast")
+            Text(AppConstants.UI.fiveDayForecast)
                 .font(.headline.bold())
                 .foregroundColor(adaptiveForeground())
                 .padding(.horizontal, 16)
@@ -314,7 +314,7 @@ struct HomeView: View {
                             Image(systemName: day.symbolName)
                                 .font(.system(size: 24, weight: .semibold))
                                 .foregroundStyle(
-                                    (effectiveScheme == .light && day.symbolName == "sun.max.fill")
+                                    (effectiveScheme == .light && day.symbolName == AppConstants.Symbols.sunMaxFill)
                                     ? AnyShapeStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
                                     : AnyShapeStyle(adaptiveForeground())
                                 )
@@ -344,7 +344,7 @@ struct HomeView: View {
     private var sunriseSunsetCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Label("Sunrise & Sunset", systemImage: "sunrise.fill")
+                Label(AppConstants.UI.sunriseSunset, systemImage: AppConstants.Symbols.sunriseFill)
                     .font(.subheadline.bold())
                     .foregroundColor(adaptiveForeground())
                 Spacer()
@@ -353,14 +353,14 @@ struct HomeView: View {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
-                        Image(systemName: "sunrise.fill").foregroundColor(.yellow)
-                        Text(model.current?.sunrise ?? "--:--")
+                        Image(systemName: AppConstants.Symbols.sunriseFill).foregroundColor(.yellow)
+                        Text(model.current?.sunrise ?? AppConstants.UI.placeholderTime)
                             .foregroundColor(adaptiveForeground())
                             .font(.headline.bold())
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: "sunset.fill").foregroundColor(.orange)
-                        Text(model.current?.sunset ?? "--:--")
+                        Image(systemName: AppConstants.Symbols.sunsetFill).foregroundColor(.orange)
+                        Text(model.current?.sunset ?? AppConstants.UI.placeholderTime)
                             .foregroundColor(adaptiveForeground())
                             .font(.headline.bold())
                     }
@@ -379,7 +379,7 @@ struct HomeView: View {
     
     private var todayHighlightsGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Today’s Highlights")
+            Text(AppConstants.UI.todaysHighlights)
                 .font(.headline.bold())
                 .foregroundColor(adaptiveForeground())
                 .padding(.horizontal, 16)
@@ -389,55 +389,55 @@ struct HomeView: View {
             LazyVGrid(columns: columns, spacing: 12) {
                 if let feels = model.current?.feelsLikeF {
                     let feelsDisplay = TemperatureUnit.convert(Int(round(feels)))
-                    highlightTile(icon: "thermometer.sun.fill",
-                                  title: "Feels Like",
+                    highlightTile(icon: AppConstants.Symbols.thermometerSunFill,
+                                  title: AppConstants.UI.feelsLike,
                                   value: "\(feelsDisplay)°\(TemperatureUnit.unitLabel)")
                 }
                 if let wind = model.current?.windKph {
-                    highlightTile(icon: "wind",
-                                  title: "Wind",
+                    highlightTile(icon: AppConstants.Symbols.wind,
+                                  title: AppConstants.UI.wind,
                                   value: formattedWind(wind))
                 }
                 if let hum = model.current?.humidity {
-                    highlightTile(icon: "humidity.fill",
-                                  title: "Humidity",
+                    highlightTile(icon: AppConstants.Symbols.humidityFill,
+                                  title: AppConstants.UI.humidity,
                                   value: "\(hum)%")
                 }
                 if let p = model.current?.pressureMb {
-                    highlightTile(icon: "gauge.with.dots.needle.bottom.50percent",
-                                  title: "Pressure",
+                    highlightTile(icon: AppConstants.Symbols.gauge,
+                                  title: AppConstants.UI.pressure,
                                   value: formattedPressure(p))
                 }
                 if let vis = model.current?.visibilityKm {
-                    highlightTile(icon: "eye.fill",
-                                  title: "Visibility",
+                    highlightTile(icon: AppConstants.Symbols.eyeFill,
+                                  title: AppConstants.UI.visibility,
                                   value: formattedVisibility(vis))
                 }
                 if let uv = model.current?.uvIndex {
-                    highlightTile(icon: "sun.max.trianglebadge.exclamationmark",
-                                  title: "UV Index",
+                    highlightTile(icon: AppConstants.Symbols.sunMaxTriangleExclamation,
+                                  title: AppConstants.UI.uvIndex,
                                   value: "\(Int(round(uv)))")
                 }
                 if let gust = model.current?.gustKph {
-                    highlightTile(icon: "tornado",
-                                  title: "Wind Gust",
+                    highlightTile(icon: AppConstants.Symbols.tornado,
+                                  title: AppConstants.UI.windGust,
                                   value: formattedWind(gust))
                 }
                 if let dir = model.current?.windDirection, let deg = model.current?.windDegrees {
-                    highlightTile(icon: "location.north.line",
-                                  title: "Wind Dir",
+                    highlightTile(icon: AppConstants.Symbols.locationNorthLine,
+                                  title: AppConstants.UI.windDir,
                                   value: "\(dir) (\(deg)°)")
                 }
                 if let dp = model.current?.dewpointF {
                     let dpDisplay = TemperatureUnit.convert(Int(round(dp)))
-                    highlightTile(icon: "drop.fill",
-                                  title: "Dew Point",
+                    highlightTile(icon: AppConstants.Symbols.dropFill,
+                                  title: AppConstants.UI.dewPoint,
                                   value: "\(dpDisplay)°\(TemperatureUnit.unitLabel)")
                 }
                 if let hi = model.current?.heatIndexF {
                     let hiDisplay = TemperatureUnit.convert(Int(round(hi)))
-                    highlightTile(icon: "thermometer.high",
-                                  title: "Heat Index",
+                    highlightTile(icon: AppConstants.Symbols.thermometerHigh,
+                                  title: AppConstants.UI.heatIndex,
                                   value: "\(hiDisplay)°\(TemperatureUnit.unitLabel)")
                 }
             }
@@ -449,14 +449,14 @@ struct HomeView: View {
         Group {
             if let epa = model.current?.aqiEPA, let defra = model.current?.aqiDEFRA {
                 HStack(spacing: 14) {
-                    Image(systemName: "aqi.medium")
+                    Image(systemName: AppConstants.Symbols.aqiMedium)
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(adaptiveForeground())
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Air Quality")
+                        Text(AppConstants.UI.airQuality)
                             .font(.subheadline.bold())
                             .foregroundColor(adaptiveForeground())
-                        Text("EPA \(epa)  •  DEFRA \(defra)")
+                        Text("\(AppConstants.UI.airQualityEPADEFRA) \(epa)\(AppConstants.UI.airQualitySEP)\(defra)")
                             .font(.caption)
                             .foregroundColor(adaptiveForeground(opacity: 0.7))
                     }
@@ -473,14 +473,14 @@ struct HomeView: View {
     
     private var precipitationCard: some View {
         HStack(spacing: 14) {
-            Image(systemName: "cloud.rain.fill")
+            Image(systemName: AppConstants.Symbols.cloudRainFill)
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(adaptiveForeground())
             VStack(alignment: .leading, spacing: 2) {
-                Text("Precipitation")
+                Text(AppConstants.UI.precipitation)
                     .font(.subheadline.bold())
                     .foregroundColor(adaptiveForeground())
-                Text("Chance today")
+                Text(AppConstants.UI.chanceToday)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.7))
             }
@@ -527,19 +527,19 @@ struct HomeView: View {
     
     private func formattedWind(_ speedKph: Double) -> String {
         if windUnitIsKmh {
-            return String(format: "%.0f km/h", speedKph)
+            return String(format: "%.0f \(AppConstants.UI.kmh)", speedKph)
         } else {
             let mph = speedKph * 0.621371
-            return String(format: "%.0f mph", mph)
+            return String(format: "%.0f \(AppConstants.UI.mph)", mph)
         }
     }
     
     private func formattedPressure(_ hPa: Double) -> String {
         if pressureUnitIsHpa {
-            return String(format: "%.0f hPa", hPa)
+            return String(format: "%.0f \(AppConstants.UI.hPa)", hPa)
         } else {
             let inHg = hPa / 33.8639
-            return String(format: "%.2f inHg", inHg)
+            return String(format: "%.2f \(AppConstants.UI.inHg)", inHg)
         }
     }
     

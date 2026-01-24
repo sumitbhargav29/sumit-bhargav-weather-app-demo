@@ -10,7 +10,6 @@ import Combine
 import Helpers
 import Supabase
 
-
 struct SignupView: View {
     
     @State private var fullName = ""
@@ -75,7 +74,7 @@ struct SignupView: View {
                                 .fill(.ultraThinMaterial)
                                 .frame(width: 44, height: 44)
                                 .overlay {
-                                    Image(systemName: "cloud.sun.fill")
+                                    Image(systemName: AppConstants.Symbols.cloudSunFill)
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundStyle(LinearGradient(
                                             colors: [.yellow, .orange],
@@ -85,12 +84,12 @@ struct SignupView: View {
                                 }
                                 .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
                             
-                            Text("Glasscast")
+                            Text(AppConstants.UI.signupTitle)
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.white)
                                 .shadow(color: .black.opacity(0.35), radius: 10)
                             
-                            Text("CREATE YOUR ACCOUNT")
+                            Text(AppConstants.UI.signupSubtitle)
                                 .font(.caption2.weight(.light))
                                 .foregroundColor(.white.opacity(0.65))
                                 .tracking(1.1)
@@ -99,105 +98,101 @@ struct SignupView: View {
                         // Liquid Glass Card
                         VStack(alignment: .leading, spacing: 16) {
                             
-                            Text("Join the portal")
+                            Text(AppConstants.UI.signupJoin)
                                 .font(.headline.bold())
                                 .foregroundColor(.white)
                             
-                            Text("Set up your account to start exploring the weather")
+                            Text(AppConstants.UI.signupDesc)
                                 .font(.footnote)
                                 .foregroundColor(.white.opacity(0.65))
                             
                             // Full Name
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("FULL NAME")
+                                Text(AppConstants.UI.fullNameTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundColor(.white.opacity(0.7))
                                 
                                 HStack {
-                                    Image(systemName: "person.fill")
+                                    Image(systemName: AppConstants.Symbols.personFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    TextField("Jane Doe", text: $fullName)
+                                    TextField(AppConstants.UI.fullNamePlaceholder, text: $fullName)
                                         .textInputAutocapitalization(.words)
                                         .disableAutocorrection(true)
                                         .foregroundColor(.white)
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
                             // Email
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("EMAIL ADDRESS")
+                                Text(AppConstants.UI.emailTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundColor(.white.opacity(0.7))
                                 
                                 HStack {
-                                    Image(systemName: "envelope.fill")
+                                    Image(systemName: AppConstants.Symbols.envelopeFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    TextField("name@weather.com", text: $email)
+                                    TextField(AppConstants.UI.emailPlaceholder, text: $email)
                                         .textInputAutocapitalization(.never)
                                         .keyboardType(.emailAddress)
                                         .foregroundColor(.white)
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
                             // Password
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("PASSWORD")
+                                Text(AppConstants.UI.passwordTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundColor(.white.opacity(0.7))
                                 
                                 HStack {
-                                    Image(systemName: "lock.fill")
+                                    Image(systemName: AppConstants.Symbols.lockFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    SecureField("Create a password", text: $password)
+                                    SecureField(AppConstants.UI.passwordPlaceholder, text: $password)
                                         .foregroundColor(.white)
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
                             // Confirm Password
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("CONFIRM PASSWORD")
+                                Text(AppConstants.UI.confirmPasswordTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundColor(.white.opacity(0.7))
                                 
                                 HStack {
-                                    Image(systemName: "lock.circle.fill")
+                                    Image(systemName: AppConstants.Symbols.lockCircleFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    SecureField("Re-enter your password", text: $confirmPassword)
+                                    SecureField(AppConstants.UI.confirmPasswordPlaceholder, text: $confirmPassword)
                                         .foregroundColor(.white)
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
                             // Terms and Conditions
                             Toggle(isOn: $agreeToTerms) {
                                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                    Text("I agree to the")
+                                    Text(AppConstants.UI.termsPrefix)
                                         .foregroundColor(.white.opacity(0.8))
-                                    Text("Terms")
+                                    Text(AppConstants.UI.terms)
                                         .foregroundColor(.cyan)
                                         .bold()
-                                    Text("and")
+                                    Text(AppConstants.UI.and)
                                         .foregroundColor(.white.opacity(0.8))
-                                    Text("Privacy Policy")
+                                    Text(AppConstants.UI.privacyPolicy)
                                         .foregroundColor(.cyan)
                                         .bold()
                                 }
@@ -228,8 +223,8 @@ struct SignupView: View {
                                     if isSigningUp {
                                         ProgressView().tint(.white)
                                     } else {
-                                        Text("Create Account").bold()
-                                        Image(systemName: "person.badge.plus")
+                                        Text(AppConstants.UI.createAccount).bold()
+                                        Image(systemName: AppConstants.Symbols.personBadgePlus)
                                     }
                                 }
                                 .foregroundColor(.white)
@@ -253,13 +248,13 @@ struct SignupView: View {
                             
                             // Link back to Sign In
                             HStack(spacing: 6) {
-                                Text("Already have an account?")
+                                Text(AppConstants.UI.alreadyHaveAccount)
                                     .foregroundColor(.white.opacity(0.7))
                                 NavigationLink {
                                     LoginView()
                                         .navigationBarBackButtonHidden(true)
                                 } label: {
-                                    Text("Sign In")
+                                    Text(AppConstants.UI.signIn)
                                         .foregroundColor(.cyan)
                                         .bold()
                                 }
@@ -274,8 +269,8 @@ struct SignupView: View {
                         
                         // Footer
                         HStack(spacing: 6) {
-                            Image(systemName: "shield.fill")
-                            Text("SECURE BY SUPABASE")
+                            Image(systemName: AppConstants.Symbols.shieldFill)
+                            Text(AppConstants.UI.secureBySupabase)
                                 .font(.caption.weight(.semibold))
                         }
                         .foregroundColor(.white.opacity(0.55))
@@ -290,8 +285,8 @@ struct SignupView: View {
         }
         .navigationBarBackButtonHidden(true)
         // Optional: present success as an alert that routes to Login
-        .alert("Check your email", isPresented: .constant(successMessage != nil)) {
-            Button("OK") {
+        .alert(AppConstants.UI.checkYourEmail, isPresented: .constant(successMessage != nil)) {
+            Button(AppConstants.UI.ok) {
                 successMessage = nil
                 // After acknowledging, go to Login
                 navigateToLogin = true
@@ -322,11 +317,11 @@ struct SignupView: View {
             // If email confirmations are enabled, session will be nil and a confirmation email is sent.
             if response.session == nil {
                 HapticFeedback.success()
-                successMessage = "We sent a confirmation link to \(email). Please verify to finish creating your account."
+                successMessage = "\(AppConstants.UI.signupEmailSentPrefix)\(email)\(AppConstants.UI.signupEmailSentSuffix)"
             } else {
                 // If confirmations are disabled, user is signed in immediately.
                 HapticFeedback.success()
-                successMessage = "Account created successfully."
+                successMessage = AppConstants.UI.signupSuccess
             }
         } catch {
             HapticFeedback.error()
@@ -340,3 +335,4 @@ struct SignupView: View {
         SignupView()
     }
 }
+

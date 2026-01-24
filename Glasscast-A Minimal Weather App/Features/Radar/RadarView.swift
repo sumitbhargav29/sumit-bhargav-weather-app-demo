@@ -148,7 +148,7 @@ struct RadarView: View {
                                         )
                                         .shadow(color: .black.opacity(0.30), radius: 12, y: 6)
                                     
-                                    Image(systemName: AppConstants.UI.symbolLocationCircleFill)
+                                    Image(systemName: AppConstants.Symbols.locationCircleFill)
                                         .font(.system(size: 22, weight: .semibold))
                                         .foregroundStyle(LinearGradient(
                                             colors: [.cyan, .blue],
@@ -273,7 +273,7 @@ struct RadarView: View {
                         showUserPopup = false
                     }
                 } label: {
-                    Image(systemName: AppConstants.UI.symbolCloseCircleFill)
+                    Image(systemName: AppConstants.Symbols.closeCircleFill)
                         .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }
@@ -355,7 +355,7 @@ struct RadarView: View {
                         favoriteWeatherError = nil
                     }
                 } label: {
-                    Image(systemName: AppConstants.UI.symbolCloseCircleFill)
+                    Image(systemName: AppConstants.Symbols.closeCircleFill)
                         .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }
@@ -533,7 +533,7 @@ struct RadarView: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 44, height: 44)
                 .overlay {
-                    Image(systemName: AppConstants.UI.symbolMap)
+                    Image(systemName: AppConstants.Symbols.map)
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(LinearGradient(
                             colors: [.cyan, .blue],
@@ -586,7 +586,7 @@ private struct RadarMapView: View {
     var body: some View {
         Map(position: $position) {
             if let coord = userCoordinate {
-                Annotation("Me", coordinate: coord) {
+                Annotation(AppConstants.UI.annotationMe, coordinate: coord) {
                     VStack(spacing: 8) {
                         if showUserPopup {
                             markerPopup
@@ -594,7 +594,7 @@ private struct RadarMapView: View {
                                 .zIndex(1)
                         }
                         
-                        RadarView.GlassMarker(icon: AppConstants.UI.symbolLocationFill)
+                        RadarView.GlassMarker(icon: AppConstants.Symbols.locationFill)
                             .onTapGesture {
                                 HapticFeedback.light()
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
@@ -622,7 +622,7 @@ private struct RadarMapView: View {
                                     .transition(.scale.combined(with: .opacity))
                                     .zIndex(1)
                             }
-                            RadarView.GlassMarker(icon: AppConstants.UI.symbolStarFill)
+                            RadarView.GlassMarker(icon: AppConstants.Symbols.starFill)
                                 .onTapGesture {
                                     HapticFeedback.light()
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
@@ -761,7 +761,7 @@ private struct RadarViewProxyMarkerPopup: View {
                     HapticFeedback.light()
                     close()
                 } label: {
-                    Image(systemName: AppConstants.UI.symbolCloseCircleFill)
+                    Image(systemName: AppConstants.Symbols.closeCircleFill)
                         .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }
@@ -849,7 +849,7 @@ private struct RadarViewProxyFavoritePopup: View {
                     HapticFeedback.light()
                     close()
                 } label: {
-                    Image(systemName: AppConstants.UI.symbolCloseCircleFill)
+                    Image(systemName: AppConstants.Symbols.closeCircleFill)
                         .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }

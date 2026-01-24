@@ -64,13 +64,14 @@ struct SearchCityView: View {
         .task {
             await favorites.load()
         }
-        .alert("Clear all favorites?", isPresented: $viewModel.showClearAllConfirm) {
-            Button("Cancel", role: .cancel) {}
-            Button("Clear All", role: .destructive) {
+        .alert(AppConstants.UI.clearAllAlertTitle, isPresented: $viewModel.showClearAllConfirm) {
+            Button(AppConstants.UI.cancel, role: .cancel) {}
+            Button(AppConstants.UI.clearAll, role: .destructive) {
+                HapticFeedback.success()
                 Task { await favorites.clearAll() }
             }
         } message: {
-            Text("This will remove all your saved cities.")
+            Text(AppConstants.UI.clearAllAlertMessage)
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -79,9 +80,9 @@ struct SearchCityView: View {
     private var topBar: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Search for a City")
+                Text(AppConstants.UI.searchTitle)
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                Text("Find and save locations")
+                Text(AppConstants.UI.searchSubtitle)
                     .font(.caption)
                     .opacity(0.65)
             }
@@ -94,9 +95,9 @@ struct SearchCityView: View {
     // MARK: - Search Field
     private var searchField: some View {
         HStack(spacing: 12) {
-            Image(systemName: "magnifyingglass")
+            Image(systemName: AppConstants.Symbols.magnifyingglass)
             
-            TextField("Find a city…", text: $viewModel.query)
+            TextField(AppConstants.UI.searchPlaceholder, text: $viewModel.query)
                 .focused($isSearchFocused)
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
@@ -106,9 +107,10 @@ struct SearchCityView: View {
             
             if !viewModel.query.isEmpty {
                 Button {
+                    HapticFeedback.selection()
                     viewModel.clearSearch()
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
+                    Image(systemName: AppConstants.Symbols.closeCircleFill)
                 }
                 .buttonStyle(.plain)
             }
@@ -125,7 +127,7 @@ struct SearchCityView: View {
             headerRow
             
             if favorites.favorites.isEmpty {
-                Text("No favorites yet. Search and add cities you care about.")
+                Text(AppConstants.UI.favoritesEmpty)
                     .font(.footnote)
                     .opacity(0.7)
                     .padding(.horizontal, 16)
@@ -133,6 +135,7 @@ struct SearchCityView: View {
                 VStack(spacing: 16) {
                     ForEach(favorites.favorites) { fav in
                         Button {
+                            HapticFeedback.light()
                             selectedCity.set(city: fav.city)
                             selectedTab = 0
                         } label: {
@@ -141,6 +144,7 @@ struct SearchCityView: View {
                                 weather: viewModel.favoriteWeather[fav.id],
                                 isLoading: viewModel.loadingFavorites.contains(fav.id),
                                 onDelete: {
+                                    HapticFeedback.medium()
                                     Task {
                                         await favorites.toggle(
                                             city: fav.city,
@@ -163,23 +167,25 @@ struct SearchCityView: View {
     
     private var headerRow: some View {
         HStack {
-            Text("FAVORITES")
+            Text(AppConstants.UI.favoritesHeader)
                 .font(.caption.weight(.semibold))
                 .opacity(0.75)
-            
+ 
             Spacer()
             
             if favorites.isLoading {
                 ProgressView()
             } else {
-                Button("SYNC") {
+                Button(AppConstants.UI.sync) {
+                    HapticFeedback.medium()
                     Task { await favorites.load() }
                 }
             }
             
             if !favorites.favorites.isEmpty {
                 Divider().frame(height: 12)
-                Button("CLEAR ALL") {
+                Button(AppConstants.UI.clearAll) {
+                    HapticFeedback.warning()
                     viewModel.showClearAllConfirm = true
                 }
             }
@@ -192,7 +198,7 @@ struct SearchCityView: View {
         Group {
             if isSearchFocused && !viewModel.results.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("SEARCH RESULTS")
+                    Text(AppConstants.UI.searchResultsHeader)
                         .font(.caption.weight(.semibold))
                         .opacity(0.75)
                         .padding(.horizontal, 16)
@@ -200,6 +206,7 @@ struct SearchCityView: View {
                     VStack(spacing: 16) {
                         ForEach(viewModel.results) { city in
                             Button {
+                                HapticFeedback.light()
                                 selectedCity.set(city: city.name)
                                 selectedTab = 0
                             } label: {
@@ -209,6 +216,7 @@ struct SearchCityView: View {
                                     isFavorite: favorites.isFavorite(city.name) != nil,
                                     isLoading: viewModel.loadingResults.contains(city.id),
                                     onToggleFavorite: {
+                                        HapticFeedback.selection()
                                         Task {
                                             await favorites.toggle(
                                                 city: city.name,

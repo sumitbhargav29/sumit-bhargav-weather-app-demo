@@ -13,25 +13,25 @@ struct TabContainerView: View {
         TabView(selection: $selectedTab) {
             HomeView(model: homeVM)
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label(AppConstants.UI.homeTab, systemImage: AppConstants.Symbols.houseFill)
                 }
                 .tag(0)
             
             SearchCityView(selectedTab: $selectedTab)
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label(AppConstants.UI.searchTab, systemImage: AppConstants.Symbols.magnifyingglass)
                 }
                 .tag(1)
             
             RadarView()
                 .tabItem {
-                    Label("Radar", systemImage: "map")
+                    Label(AppConstants.UI.radarTitle, systemImage: AppConstants.Symbols.map)
                 }
                 .tag(2)
             
             SettingsView()
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
+                    Label(AppConstants.UI.settingsTitle, systemImage: AppConstants.Symbols.gearshapeFill)
                 }
                 .tag(3)
         }
@@ -40,3 +40,4 @@ struct TabContainerView: View {
         .environmentObject(selectedCityStore)
     }
 }
+

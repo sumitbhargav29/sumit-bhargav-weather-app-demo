@@ -23,7 +23,7 @@ struct FavoriteCityRow: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 36, height: 36)
                 .overlay {
-                    Image(systemName: "star.fill")
+                    Image(systemName: AppConstants.Symbols.starFill)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(LinearGradient(
                             colors: [.cyan, .blue],
@@ -55,12 +55,12 @@ struct FavoriteCityRow: View {
                     Text("\(t)°")
                         .font(.subheadline.bold())
                         .foregroundColor(adaptiveForeground())
-                    Text("H \(h)°  L \(l)°")
+                    Text("\(AppConstants.UI.highAbbrev) \(h)°  \(AppConstants.UI.lowAbbrev) \(l)°")
                         .font(.caption)
                         .foregroundColor(adaptiveForeground(opacity: 0.8))
                 }
             } else {
-                Text("—")
+                Text(AppConstants.UI.placeholderDash)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.6))
             }
@@ -69,7 +69,7 @@ struct FavoriteCityRow: View {
                 HapticFeedback.light()
                 onDelete()
             } label: {
-                Image(systemName: "trash.fill")
+                Image(systemName: AppConstants.Symbols.trashFill)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.red)
                     .padding(8)
@@ -78,7 +78,7 @@ struct FavoriteCityRow: View {
                     )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Remove favorite")
+            .accessibilityLabel(AppConstants.Accessibility.removeFavorite)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)

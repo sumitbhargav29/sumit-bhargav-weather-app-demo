@@ -62,8 +62,6 @@ struct LoginView: View {
                         // Invisible NavigationLink to HomeView, triggered by navigateToHome
                         NavigationLink(isActive: $navigateToHome) {
                             TabContainerView(homeModel: container.makeHomeViewModel())
-                            
-                            //                            TabContainerView()
                                 .navigationBarBackButtonHidden(true)
                         } label: {
                             EmptyView()
@@ -76,7 +74,7 @@ struct LoginView: View {
                                 .fill(.ultraThinMaterial)
                                 .frame(width: 44, height: 44)
                                 .overlay {
-                                    Image(systemName: "cloud.sun.rain.fill")
+                                    Image(systemName: AppConstants.Symbols.cloudSunRainFill)
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundStyle(LinearGradient(
                                             colors: [.cyan, .blue],
@@ -86,12 +84,12 @@ struct LoginView: View {
                                 }
                                 .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
                             
-                            Text("Glasscast")
+                            Text(AppConstants.UI.loginTitle)
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.white)
                                 .shadow(color: .black.opacity(0.35), radius: 10)
                             
-                            Text("SIGN IN TO YOUR WEATHER PORTAL")
+                            Text(AppConstants.UI.loginSubtitle)
                                 .font(.caption2.weight(.light))
                                 .foregroundColor(.white.opacity(0.65))
                                 .tracking(1.1)
@@ -100,25 +98,25 @@ struct LoginView: View {
                         // Liquid Glass Card
                         VStack(alignment: .leading, spacing: 18) {
                             
-                            Text("Welcome back")
+                            Text(AppConstants.UI.loginWelcomeBack)
                                 .font(.headline.bold())
                                 .foregroundColor(.white)
                             
-                            Text("Securely sign in to continue")
+                            Text(AppConstants.UI.loginSecurelySignIn)
                                 .font(.footnote)
                                 .foregroundColor(.white.opacity(0.65))
                             
                             // Email
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("EMAIL ADDRESS")
+                                Text(AppConstants.UI.emailTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundColor(.white.opacity(0.7))
                                 
                                 HStack(spacing: 10) {
-                                    Image(systemName: "envelope.fill")
+                                    Image(systemName: AppConstants.Symbols.envelopeFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    TextField("name@weather.com", text: $email)
+                                    TextField(AppConstants.UI.emailPlaceholder, text: $email)
                                         .textInputAutocapitalization(.never)
                                         .keyboardType(.emailAddress)
                                         .disableAutocorrection(true)
@@ -131,14 +129,13 @@ struct LoginView: View {
                                         }
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
                             // Password
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
-                                    Text("PASSWORD")
+                                    Text(AppConstants.UI.passwordTitle)
                                         .font(.caption.weight(.semibold))
                                         .foregroundColor(.white.opacity(0.7))
                                     
@@ -147,7 +144,7 @@ struct LoginView: View {
                                     Button {
                                         // TODO: forgot password flow
                                     } label: {
-                                        Text("FORGOT?")
+                                        Text(AppConstants.UI.forgot)
                                             .font(.caption.bold())
                                             .foregroundColor(.cyan)
                                     }
@@ -155,11 +152,11 @@ struct LoginView: View {
                                 }
                                 
                                 HStack(spacing: 10) {
-                                    Image(systemName: "lock.fill")
+                                    Image(systemName: AppConstants.Symbols.lockFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
                                     if showPassword {
-                                        TextField("Your password", text: $password)
+                                        TextField(AppConstants.UI.yourPassword, text: $password)
                                             .foregroundColor(.white)
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
@@ -168,7 +165,7 @@ struct LoginView: View {
                                                 attemptSignIn()
                                             }
                                     } else {
-                                        SecureField("Your password", text: $password)
+                                        SecureField(AppConstants.UI.yourPassword, text: $password)
                                             .foregroundColor(.white)
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
@@ -183,13 +180,12 @@ struct LoginView: View {
                                             showPassword.toggle()
                                         }
                                     } label: {
-                                        Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                                        Image(systemName: showPassword ? AppConstants.Symbols.eyeSlashFill : AppConstants.Symbols.eyeFillAlt)
                                             .foregroundColor(.white.opacity(0.75))
                                     }
                                     .buttonStyle(.plain)
                                 }
                                 .padding(12)
-                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
                                 .glassEffect()
                             }
                             
@@ -202,9 +198,9 @@ struct LoginView: View {
                                         ProgressView()
                                             .tint(.white)
                                     }
-                                    Text(isSigningIn ? "Signing In..." : "Sign In").bold()
+                                    Text(isSigningIn ? AppConstants.UI.signingIn : AppConstants.UI.signInAction).bold()
                                     if !isSigningIn {
-                                        Image(systemName: "arrow.right")
+                                        Image(systemName: AppConstants.Symbols.arrowRight)
                                     }
                                 }
                                 .foregroundColor(.white)
@@ -228,12 +224,12 @@ struct LoginView: View {
                             
                             // Navigate to Signup
                             HStack(spacing: 6) {
-                                Text("Don’t have an account?")
+                                Text(AppConstants.UI.dontHaveAccount)
                                     .foregroundColor(.white.opacity(0.7))
                                 NavigationLink {
                                     SignupView()
                                 } label: {
-                                    Text("Create Account")
+                                    Text(AppConstants.UI.createAccountAction)
                                         .foregroundColor(.cyan)
                                         .bold()
                                 }
@@ -249,8 +245,8 @@ struct LoginView: View {
                                 }
                             } label: {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "wrench.and.screwdriver.fill")
-                                    Text("Debug Sign-In Probe")
+                                    Image(systemName: AppConstants.Symbols.wrenchScrewdriverFill)
+                                    Text(AppConstants.UI.debugSignInProbe)
                                 }
                                 .font(.footnote.bold())
                                 .foregroundColor(.white)
@@ -270,8 +266,8 @@ struct LoginView: View {
                         
                         // Footer
                         HStack(spacing: 6) {
-                            Image(systemName: "shield.fill")
-                            Text("SECURE BY SUPABASE")
+                            Image(systemName: AppConstants.Symbols.shieldFill)
+                            Text(AppConstants.UI.secureBySupabase)
                                 .font(.caption.weight(.semibold))
                         }
                         .foregroundColor(.white.opacity(0.55))
@@ -286,18 +282,18 @@ struct LoginView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .alert("Sign In Failed", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) {
+        .alert(AppConstants.UI.signInFailedTitle, isPresented: $showErrorAlert) {
+            Button(AppConstants.UI.ok, role: .cancel) {
                 showErrorAlert = false
             }
         } message: {
-            Text(errorMessage ?? "An unknown error occurred. Please try again.")
+            Text(errorMessage ?? AppConstants.UI.unknownError)
         }
 #if DEBUG
-        .alert("Probe Output", isPresented: $showProbeAlert) {
-            Button("OK", role: .cancel) { showProbeAlert = false }
+        .alert(AppConstants.UI.probeOutput, isPresented: $showProbeAlert) {
+            Button(AppConstants.UI.ok, role: .cancel) { showProbeAlert = false }
         } message: {
-            Text(probeOutput ?? "No output")
+            Text(probeOutput ?? AppConstants.UI.placeholderDash)
         }
 #endif
     }
@@ -308,7 +304,7 @@ struct LoginView: View {
         email = email.trimmingCharacters(in: .whitespacesAndNewlines)
         password = password.trimmingCharacters(in: .whitespacesAndNewlines)
         guard isFormValid else {
-            presentError("Please enter a valid email and password.")
+            presentError(AppConstants.UI.pleaseEnterValidEmailPassword)
             return
         }
         
@@ -352,7 +348,7 @@ struct LoginView: View {
         let e = email.trimmingCharacters(in: .whitespacesAndNewlines)
         let p = password.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !e.isEmpty, !p.isEmpty else {
-            probeOutput = "Enter email and password first."
+            probeOutput = AppConstants.UI.enterEmailAndPasswordFirst
             showProbeAlert = true
             return
         }
@@ -380,18 +376,18 @@ struct LoginView: View {
         let raw = ns.localizedDescription
         
         // Common opaque decoding error from SDK when response is unexpected
-        if raw == "The data couldn’t be read because it is missing." ||
-            raw == "The data couldn’t be read because it isn’t in the correct format." {
-            return "Sign in didn’t complete. Please check your email and password, then try again. If the issue persists, try again later."
+        if raw == AppConstants.UI.loginDecodingError1 ||
+            raw == AppConstants.UI.loginDecodingError2 {
+            return AppConstants.UI.loginDecodingFriendly
         }
         
         // Network offline / connectivity
         if ns.domain == NSURLErrorDomain {
             switch ns.code {
             case NSURLErrorNotConnectedToInternet:
-                return "You appear to be offline. Please check your internet connection."
+                return AppConstants.UI.loginOffline
             case NSURLErrorTimedOut:
-                return "The request timed out. Please try again."
+                return AppConstants.UI.loginTimeout
             default:
                 break
             }
@@ -400,10 +396,10 @@ struct LoginView: View {
         // Supabase / auth typical messages we can clarify a bit
         let lowered = raw.lowercased()
         if lowered.contains("invalid login") || lowered.contains("invalid email or password") {
-            return "Invalid email or password. Please try again."
+            return AppConstants.UI.loginInvalidCredentials
         }
         if lowered.contains("email not confirmed") || lowered.contains("confirm") {
-            return "Please confirm your email before signing in. Check your inbox for the verification link."
+            return AppConstants.UI.loginConfirmEmail
         }
         
         // Fallback to the original message
@@ -416,3 +412,4 @@ struct LoginView: View {
         LoginView()
     }
 }
+

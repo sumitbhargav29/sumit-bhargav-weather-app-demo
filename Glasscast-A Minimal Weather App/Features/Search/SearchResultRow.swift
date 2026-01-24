@@ -24,7 +24,7 @@ struct SearchResultRow: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: 36, height: 36)
                 .overlay {
-                    Image(systemName: "magnifyingglass")
+                    Image(systemName: AppConstants.Symbols.magnifyingglass)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(adaptiveForeground())
                 }
@@ -52,12 +52,12 @@ struct SearchResultRow: View {
                     Text("\(t)°")
                         .font(.subheadline.bold())
                         .foregroundColor(adaptiveForeground())
-                    Text("H \(h)°  L \(l)°")
+                    Text("\(AppConstants.UI.highAbbrev) \(h)°  \(AppConstants.UI.lowAbbrev) \(l)°")
                         .font(.caption)
                         .foregroundColor(adaptiveForeground(opacity: 0.8))
                 }
             } else {
-                Text("—")
+                Text(AppConstants.UI.placeholderDash)
                     .font(.caption)
                     .foregroundColor(adaptiveForeground(opacity: 0.6))
             }
@@ -66,7 +66,7 @@ struct SearchResultRow: View {
                 HapticFeedback.selection()
                 onToggleFavorite()
             } label: {
-                Image(systemName: isFavorite ? "star.fill" : "star")
+                Image(systemName: isFavorite ? AppConstants.Symbols.starFill : AppConstants.Symbols.star)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(isFavorite ? .yellow : adaptiveForeground())
                     .padding(8)
@@ -75,7 +75,7 @@ struct SearchResultRow: View {
                     )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
+            .accessibilityLabel(isFavorite ? AppConstants.Accessibility.removeFromFavorites : AppConstants.Accessibility.addToFavorites)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
