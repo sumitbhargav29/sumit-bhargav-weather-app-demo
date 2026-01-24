@@ -15,6 +15,7 @@ struct HomeView: View {
     
     @StateObject private var model: HomeViewModel
     @StateObject private var locator = LocationProvider()
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
     private let geocoder = CLGeocoder()
     
     // Units
@@ -26,8 +27,13 @@ struct HomeView: View {
     @AppStorage("notificationsDailySummary") private var dailySummary: Bool = false
     
     // Background theme
-    private var theme: WeatherTheme {
-        model.current?.theme ?? .sunny
+    
+    private let theme: WeatherTheme = .sunny
+    
+    
+    // Adaptive foreground color helper
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
     }
     
     init(model: HomeViewModel) {
@@ -147,10 +153,10 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Glasscast")
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text("A Minimal Weather App")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
             
         }
@@ -166,31 +172,37 @@ struct HomeView: View {
                         .overlay {
                             Image(systemName: severeAlerts ? "exclamationmark.triangle.fill" : "bell.fill")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(severeAlerts ? .red.opacity(0.95) : .white.opacity(0.95))
+                                .foregroundStyle(severeAlerts ? .red.opacity(0.95) : adaptiveForeground(opacity: 0.95))
                         }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         if severeAlerts && dailySummary {
                             Text("Severe Alerts + Daily Summary")
                                 .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
+                            
                             Text("You’ll receive severe weather alerts and a daily digest.")
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(adaptiveForeground())
+                            
                         } else if severeAlerts {
                             Text("Severe Weather Alerts")
                                 .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
+                            
                             Text("Enabled in Settings")
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(adaptiveForeground())
+                            
                         } else {
                             Text("Daily Summary")
                                 .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
+                            
                             Text("Enabled in Settings")
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(adaptiveForeground())
+                            
                         }
                     }
                     
@@ -198,7 +210,8 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 12)
                 .padding(.horizontal, 14)
-                .liquidGlass(cornerRadius: 16, intensity: 0.30)
+                //                .liquidGlass(cornerRadius: 16, intensity: 0.30)
+                .glassEffect()
                 .padding(.horizontal, 16)
             }
         }
@@ -210,19 +223,19 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(model.current?.city ?? "Loading...")
                         .font(.headline.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                     
                     HStack(spacing: 8) {
                         if let condition = model.current?.condition {
                             Text(condition)
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.85))
+                                .foregroundColor(adaptiveForeground(opacity: 0.85))
                         }
                         if let high = model.current?.high, let low = model.current?.low {
                             let (h, l) = TemperatureUnit.convert(high: high, low: low)
                             Text("H \(h)°  L \(l)°")
                                 .font(.caption.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(adaptiveForeground(opacity: 0.7))
                         }
                     }
                 }
@@ -232,7 +245,7 @@ struct HomeView: View {
                 if let symbol = model.current?.symbolName {
                     Image(systemName: symbol)
                         .font(.system(size: 36, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(adaptiveForeground())
                         .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
                 }
             }
@@ -242,16 +255,16 @@ struct HomeView: View {
                 let temp = useCelsius ? Int(round((tempF - 32) * 5 / 9)) : Int(round(tempF))
                 Text("\(temp)")
                     .font(.system(size: 64, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
                 Text("°")
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .offset(y: -6)
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(adaptiveForeground(opacity: 0.9))
                 
                 Text(TemperatureUnit.unitLabel)
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.85))
+                    .foregroundColor(adaptiveForeground(opacity: 0.85))
                     .padding(.leading, 2)
                 
                 Spacer()
@@ -266,7 +279,7 @@ struct HomeView: View {
                     } label: {
                         Label("Refresh", systemImage: "arrow.clockwise.circle.fill")
                             .font(.subheadline.bold())
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                     }
                     .buttonStyle(.plain)
                 }
@@ -281,7 +294,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("5-Day Forecast")
                 .font(.headline.bold())
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
                 .padding(.horizontal, 16)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -290,20 +303,20 @@ struct HomeView: View {
                         VStack(spacing: 10) {
                             Text(day.weekday.uppercased())
                                 .font(.caption.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(adaptiveForeground(opacity: 0.8))
                             
                             Image(systemName: day.symbolName)
                                 .font(.system(size: 24, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(adaptiveForeground())
                             
                             HStack(spacing: 6) {
                                 let (h, l) = TemperatureUnit.convert(high: day.high, low: day.low)
                                 Text("\(h)°")
                                     .font(.subheadline.bold())
-                                    .foregroundColor(.white)
+                                    .foregroundColor(adaptiveForeground())
                                 Text("\(l)°")
                                     .font(.footnote)
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(adaptiveForeground(opacity: 0.7))
                             }
                         }
                         .padding(.vertical, 16)
@@ -323,7 +336,7 @@ struct HomeView: View {
             HStack {
                 Label("Sunrise & Sunset", systemImage: "sunrise.fill")
                     .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Spacer()
             }
             
@@ -332,13 +345,13 @@ struct HomeView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "sunrise.fill").foregroundColor(.yellow)
                         Text(model.current?.sunrise ?? "--:--")
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                             .font(.headline.bold())
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "sunset.fill").foregroundColor(.orange)
                         Text(model.current?.sunset ?? "--:--")
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                             .font(.headline.bold())
                     }
                 }
@@ -358,7 +371,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Today’s Highlights")
                 .font(.headline.bold())
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
                 .padding(.horizontal, 16)
             
             let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
@@ -428,20 +441,21 @@ struct HomeView: View {
                 HStack(spacing: 14) {
                     Image(systemName: "aqi.medium")
                         .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(adaptiveForeground())
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Air Quality")
                             .font(.subheadline.bold())
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                         Text("EPA \(epa)  •  DEFRA \(defra)")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(adaptiveForeground(opacity: 0.7))
                     }
                     Spacer()
                 }
                 .padding(.vertical, 14)
                 .padding(.horizontal, 16)
-                .liquidGlass(cornerRadius: 18, intensity: 0.30)
+                //                .liquidGlass(cornerRadius: 18, intensity: 0.30)
+                .glassEffect()
                 .padding(.horizontal, 16)
             }
         }
@@ -451,23 +465,24 @@ struct HomeView: View {
         HStack(spacing: 14) {
             Image(systemName: "cloud.rain.fill")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(adaptiveForeground())
             VStack(alignment: .leading, spacing: 2) {
                 Text("Precipitation")
                     .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text("Chance today")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(adaptiveForeground(opacity: 0.7))
             }
             Spacer()
             Text("\(model.current?.precipChance ?? 0)%")
                 .font(.headline.bold())
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
-        .liquidGlass(cornerRadius: 18, intensity: 0.30)
+        //        .liquidGlass(cornerRadius: 18, intensity: 0.30)
+        .glassEffect()
         .padding(.horizontal, 16)
     }
     
@@ -481,22 +496,23 @@ struct HomeView: View {
                 .overlay {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.95))
+                        .foregroundStyle(adaptiveForeground(opacity: 0.95))
                 }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(adaptiveForeground(opacity: 0.8))
                     .font(.caption)
                 Text(value)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.subheadline.bold())
             }
             Spacer()
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        //        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        .glassEffect()
     }
     
     private func formattedWind(_ speedKph: Double) -> String {

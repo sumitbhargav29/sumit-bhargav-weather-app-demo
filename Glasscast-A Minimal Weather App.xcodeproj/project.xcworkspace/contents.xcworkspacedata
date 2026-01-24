@@ -5,9 +5,6 @@
       location = "self:">
    </FileRef>
    <FileRef
-      location = "group:WeatherAPIModels.swift">
-   </FileRef>
-   <FileRef
-      location = "group:WeatherAPIService.swift">
+      location = "group:WeatherSharedStore.swift">
    </FileRef>
 </Workspace>

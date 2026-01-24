@@ -12,14 +12,23 @@ import SwiftUI
 
 struct RadarView: View {
     // Default region centered on Cupertino; adjust as desired
-    @State private var position = MapCameraPosition.region(
+    @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.0090),
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
     )
     
-    private let theme: WeatherTheme = .foggy
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) private var systemColorScheme
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+    
+    private let theme: WeatherTheme = .sunny
+    
+    // Adaptive foreground color helper
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
     private let cardCornerRadius: CGFloat = 20
     private let innerInset: CGFloat = 5
     
@@ -59,82 +68,26 @@ struct RadarView: View {
             VStack(spacing: 16) {
                 header
                 
-                // Glass container with internal 5pt padding so Map sits inside
                 ZStack {
-                    Map(position: $position) {
-                        // Current location marker
-                        if let coord = userCoordinate {
-                            Annotation("Me", coordinate: coord) {
-                                // Marker + anchored popup
-                                VStack(spacing: 8) {
-                                    if showUserPopup {
-                                        markerPopup
-                                            .transition(.scale.combined(with: .opacity))
-                                            .zIndex(1)
-                                    }
-                                    
-                                    GlassMarker(icon: "location.fill")
-                                        .onTapGesture {
-                                            HapticFeedback.light()
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
-                                                showUserPopup.toggle()
-                                            }
-                                            Task {
-                                                if let coord = userCoordinate {
-                                                    await fetchWeatherForCurrentLocation(coord)
-                                                }
-                                            }
-                                        }
-                                }
-                                .padding(.bottom, showUserPopup ? 10 : 0)
-                                .accessibilityLabel("Current Location")
-                            }
-                        }
-                        
-                        // Favorite city markers
-                        ForEach(favoritesStore.favorites, id: \.id) { fav in
-                            let coord = coordinateForFavorite(fav)
-                            if let coord {
-                                Annotation(fav.city, coordinate: coord) {
-                                    VStack(spacing: 8) {
-                                        if selectedFavoriteCity == fav.city {
-                                            favoritePopup(for: fav.city)
-                                                .transition(.scale.combined(with: .opacity))
-                                                .zIndex(1)
-                                        }
-                                        GlassMarker(icon: "star.fill")
-                                            .onTapGesture {
-                                                HapticFeedback.light()
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
-                                                    if selectedFavoriteCity == fav.city {
-                                                        selectedFavoriteCity = nil
-                                                    } else {
-                                                        selectedFavoriteCity = fav.city
-                                                    }
-                                                }
-                                                Task {
-                                                    await fetchWeatherForFavorite(city: fav.city)
-                                                }
-                                            }
-                                    }
-                                    .padding(.bottom, selectedFavoriteCity == fav.city ? 10 : 0)
-                                    .accessibilityLabel("\(fav.city)")
-                                }
-                            }
-                        }
-                    }
-                    // Use lighter map style for better performance
-                    .mapStyle(.standard(elevation: .flat))
-                    // Mask the map so its corners follow the outer radius minus the inset
-                    .mask(
-                        RoundedRectangle(cornerRadius: cardCornerRadius - innerInset, style: .continuous)
+                    RadarMapView(
+                        position: $position,
+                        userCoordinate: $userCoordinate,
+                        showUserPopup: $showUserPopup,
+                        currentCity: $currentCity,
+                        currentWeather: $currentWeather,
+                        isLoadingWeather: $isLoadingWeather,
+                        weatherError: $weatherError,
+                        selectedFavoriteCity: $selectedFavoriteCity,
+                        selectedFavoriteWeather: $selectedFavoriteWeather,
+                        isLoadingFavoriteWeather: $isLoadingFavoriteWeather,
+                        favoriteWeatherError: $favoriteWeatherError,
+                        favoriteCoords: $favoriteCoords
                     )
-                    .padding(innerInset)
-                    // React to coordinate updates from the provider
+                    .environmentObject(favoritesStore)
+                    .environment(\.container, container)
                     .task(id: locator.coordinate?.latitude) {
                         if let coord = locator.coordinate {
                             userCoordinate = coord
-                            // Use shorter animation duration for better responsiveness
                             withAnimation(.easeInOut(duration: 0.4)) {
                                 position = .region(
                                     MKCoordinateRegion(
@@ -145,14 +98,12 @@ struct RadarView: View {
                             }
                         }
                     }
-                    // Load favorites and resolve their coordinates (prefer stored lat/lon; fallback to geocoding)
                     .task {
                         if favoritesStore.favorites.isEmpty {
                             await favoritesStore.load()
                         }
                         await resolveFavoriteCoordinates()
                     }
-                    // Re-resolve when favorites change (e.g., user adds/removes)
                     .onChange(of: favoritesStore.favorites) { _ in
                         Task { await resolveFavoriteCoordinates() }
                     }
@@ -165,10 +116,8 @@ struct RadarView: View {
                             Button {
                                 HapticFeedback.medium()
                                 Task {
-                                    // Ensure permission flow starts if needed
                                     locator.requestWhenInUse()
                                     if let coord = userCoordinate {
-                                        // Faster animation for better responsiveness
                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
                                             position = .region(
                                                 MKCoordinateRegion(
@@ -197,8 +146,6 @@ struct RadarView: View {
                                                     lineWidth: 1
                                                 )
                                         )
-                                        // Reduced intensity for better performance on map
-                                        .liquidGlass(cornerRadius: 22, intensity: 0.18)
                                         .shadow(color: .black.opacity(0.30), radius: 12, y: 6)
                                     
                                     Image(systemName: "location.circle.fill")
@@ -217,7 +164,6 @@ struct RadarView: View {
                     }
                     .allowsHitTesting(true)
                 }
-                // Use static glass effect instead of animated for map container (better performance)
                 .background {
                     RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
                         .fill(.ultraThinMaterial)
@@ -225,20 +171,28 @@ struct RadarView: View {
                             RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
                                 .stroke(
                                     LinearGradient(
-                                        colors: [
-                                            .white.opacity(0.35),
+                                        colors: colorScheme == .dark ? [
+                                            .white.opacity(0.45),
+                                            .white.opacity(0.20),
+                                            .white.opacity(0.25)
+                                        ] : [
+                                            .white.opacity(0.25),
                                             .clear,
-                                            .white.opacity(0.15)
+                                            .white.opacity(0.10)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     ),
-                                    lineWidth: 1
+                                    lineWidth: colorScheme == .dark ? 1.2 : 1.0
                                 )
                         }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
-                .shadow(color: .black.opacity(0.3), radius: 30, y: 20)
+                .shadow(
+                    color: colorScheme == .dark ? .black.opacity(0.5) : .black.opacity(0.2),
+                    radius: colorScheme == .dark ? 35 : 25,
+                    y: colorScheme == .dark ? 25 : 15
+                )
                 .frame(maxWidth: 800)
                 .frame(minHeight: 220)
                 .padding(.horizontal, 16)
@@ -247,7 +201,6 @@ struct RadarView: View {
             .padding(.top, 16)
         }
         .onAppear {
-            // Start location updates
             locator.requestWhenInUse()
         }
         .navigationBarBackButtonHidden(true)
@@ -266,7 +219,7 @@ struct RadarView: View {
     }
     
     // Custom glass marker styled for this app
-    private struct GlassMarker: View {
+    struct GlassMarker: View {
         var icon: String
         
         var body: some View {
@@ -297,7 +250,6 @@ struct RadarView: View {
                                 ))
                         )
                 }
-                // small pointer
                 RoundedRectangle(cornerRadius: 1)
                     .fill(LinearGradient(colors: [.cyan.opacity(0.9), .blue.opacity(0.9)],
                                          startPoint: .top, endPoint: .bottom))
@@ -313,7 +265,7 @@ struct RadarView: View {
             HStack {
                 Text(currentCity ?? "Current Location")
                     .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Spacer()
                 Button {
                     HapticFeedback.light()
@@ -322,7 +274,7 @@ struct RadarView: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .buttonStyle(.plain)
@@ -332,45 +284,44 @@ struct RadarView: View {
                 HStack(spacing: 8) {
                     ProgressView().tint(.white)
                     Text("Loading…")
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                         .font(.footnote)
                 }
             } else if let error = weatherError {
                 Text(error)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.footnote)
             } else if let cw = currentWeather {
                 HStack(spacing: 10) {
                     Image(systemName: cw.symbolName)
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(adaptiveForeground())
                     VStack(alignment: .leading, spacing: 2) {
                         Text(cw.condition)
                             .font(.footnote.weight(.semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                         HStack(spacing: 8) {
                             let (t, h, l) = TemperatureUnit.convert(temp: cw.temperature, high: cw.high, low: cw.low)
                             Text("\(t)°")
                                 .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                             Text(TemperatureUnit.unitLabel)
                                 .font(.caption2.weight(.semibold))
                                 .foregroundColor(.white.opacity(0.85))
                             Text("H \(h)°  L \(l)°")
                                 .font(.caption)
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                             
                         }
                     }
                 }
             } else {
                 Text("Tap marker to load weather.")
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.footnote)
             }
         }
         .padding(12)
-        // Add a subtle tinted background behind the glass to reduce full transparency
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(
@@ -384,8 +335,8 @@ struct RadarView: View {
                     )
                 )
         )
-        // Reduced intensity for popups on map for better performance
-        .liquidGlass(cornerRadius: 14, intensity: 0.22)
+         .glassEffect()
+        
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(.white.opacity(0.25), lineWidth: 1)
@@ -400,7 +351,7 @@ struct RadarView: View {
             HStack {
                 Text(city)
                     .font(.subheadline.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Spacer()
                 Button {
                     HapticFeedback.light()
@@ -410,7 +361,7 @@ struct RadarView: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .buttonStyle(.plain)
@@ -420,30 +371,30 @@ struct RadarView: View {
                 HStack(spacing: 8) {
                     ProgressView().tint(.white)
                     Text("Loading…")
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                         .font(.footnote)
                 }
             } else if let error = favoriteWeatherError {
                 Text(error)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.footnote)
             } else if let cw = selectedFavoriteWeather, cw.city.caseInsensitiveCompare(city) == .orderedSame {
                 HStack(spacing: 10) {
                     Image(systemName: cw.symbolName)
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(adaptiveForeground())
                     VStack(alignment: .leading, spacing: 2) {
                         Text(cw.condition)
                             .font(.footnote.weight(.semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                         HStack(spacing: 8) {
                             let (t, h, l) = TemperatureUnit.convert(temp: cw.temperature, high: cw.high, low: cw.low)
                             Text("\(t)°")
                                 .font(.subheadline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                             Text("H \(h)°  L \(l)°")
                                 .font(.caption)
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                             Text(TemperatureUnit.unitLabel)
                                 .font(.caption2.weight(.semibold))
                                 .foregroundColor(.white.opacity(0.85))
@@ -452,7 +403,7 @@ struct RadarView: View {
                 }
             } else {
                 Text("Tap marker to load weather.")
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.footnote)
             }
         }
@@ -470,8 +421,9 @@ struct RadarView: View {
                     )
                 )
         )
-        // Reduced intensity for popups on map for better performance
-        .liquidGlass(cornerRadius: 14, intensity: 0.22)
+        //        .liquidGlass(cornerRadius: 14, intensity: 0.22)
+        .glassEffect()
+        
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(.white.opacity(0.25), lineWidth: 1)
@@ -487,14 +439,12 @@ struct RadarView: View {
         defer { isLoadingWeather = false }
         
         do {
-            // Reverse geocode to get a city name
             let placemarks = try await geocoder.reverseGeocodeLocation(
                 CLLocation(latitude: coord.latitude, longitude: coord.longitude)
             )
             let city = placemarks.first?.locality ?? "Current Location"
             await MainActor.run { self.currentCity = city }
             
-            // Fetch using existing WeatherService API (by city name)
             let weather = try await weatherService.fetchCurrentWeather(for: city)
             await MainActor.run {
                 self.currentWeather = weather
@@ -529,15 +479,12 @@ struct RadarView: View {
     }
     
     private func resolveFavoriteCoordinates() async {
-        // First fill from stored lat/lon
         for fav in favoritesStore.favorites {
             if let lat = fav.lat, let lon = fav.lon {
                 favoriteCoords[fav.city] = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             }
         }
-        // Geocode any that still lack coords
         await geocodeFavoritesIfNeeded()
-        // Optionally center map to include all markers when we first have them
         await centerIfNeeded()
     }
     
@@ -554,14 +501,13 @@ struct RadarView: View {
                     }
                 }
             } catch {
-                // You could log or surface an error per-city if desired
+                // optional: log error
             }
             favoriteGeocodingInFlight.remove(city)
         }
     }
     
     private func centerIfNeeded() async {
-        // If we have no user coordinate, but we do have favorites, fit them
         guard userCoordinate == nil else { return }
         let coords = Array(favoriteCoords.values)
         guard !coords.isEmpty else { return }
@@ -611,10 +557,10 @@ struct RadarView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Radar")
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text("Explore the map")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground())
             }
             
             Spacer()
@@ -623,7 +569,374 @@ struct RadarView: View {
     }
 }
 
+// MARK: - Extracted Map View
+
+private struct RadarMapView: View {
+    @Environment(\.container) private var container
+    @EnvironmentObject private var favoritesStore: FavoritesStore
+    
+    @Binding var position: MapCameraPosition
+    @Binding var userCoordinate: CLLocationCoordinate2D?
+    @Binding var showUserPopup: Bool
+    
+    @Binding var currentCity: String?
+    @Binding var currentWeather: CurrentWeather?
+    @Binding var isLoadingWeather: Bool
+    @Binding var weatherError: String?
+    
+    @Binding var selectedFavoriteCity: String?
+    @Binding var selectedFavoriteWeather: CurrentWeather?
+    @Binding var isLoadingFavoriteWeather: Bool
+    @Binding var favoriteWeatherError: String?
+    
+    @Binding var favoriteCoords: [String: CLLocationCoordinate2D]
+    
+    private var weatherService: WeatherService { container.weatherService }
+    private let geocoder = CLGeocoder()
+    
+    var body: some View {
+        Map(position: $position) {
+            if let coord = userCoordinate {
+                Annotation("Me", coordinate: coord) {
+                    VStack(spacing: 8) {
+                        if showUserPopup {
+                            markerPopup
+                                .transition(.scale.combined(with: .opacity))
+                                .zIndex(1)
+                        }
+                        
+                        RadarView.GlassMarker(icon: "location.fill")
+                            .onTapGesture {
+                                HapticFeedback.light()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                                    showUserPopup.toggle()
+                                }
+                                Task {
+                                    if let coord = userCoordinate {
+                                        await fetchWeatherForCurrentLocation(coord)
+                                    }
+                                }
+                            }
+                    }
+                    .padding(.bottom, showUserPopup ? 10 : 0)
+                    .accessibilityLabel("Current Location")
+                }
+            }
+            
+            ForEach(favoritesStore.favorites, id: \.id) { fav in
+                let coord = coordinateForFavorite(fav)
+                if let coord {
+                    Annotation(fav.city, coordinate: coord) {
+                        VStack(spacing: 8) {
+                            if selectedFavoriteCity == fav.city {
+                                favoritePopup(for: fav.city)
+                                    .transition(.scale.combined(with: .opacity))
+                                    .zIndex(1)
+                            }
+                            RadarView.GlassMarker(icon: "star.fill")
+                                .onTapGesture {
+                                    HapticFeedback.light()
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                                        if selectedFavoriteCity == fav.city {
+                                            selectedFavoriteCity = nil
+                                        } else {
+                                            selectedFavoriteCity = fav.city
+                                        }
+                                    }
+                                    Task {
+                                        await fetchWeatherForFavorite(city: fav.city)
+                                    }
+                                }
+                        }
+                        .padding(.bottom, selectedFavoriteCity == fav.city ? 10 : 0)
+                        .accessibilityLabel("\(fav.city)")
+                    }
+                }
+            }
+        }
+        .mapStyle(.standard(elevation: .flat))
+        .mask(
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
+        )
+        .padding(5)
+    }
+    
+    // Local helpers (duplicate minimal logic needed in this subview)
+    private func coordinateForFavorite(_ fav: FavoriteCity) -> CLLocationCoordinate2D? {
+        if let cached = favoriteCoords[fav.city] {
+            return cached
+        }
+        if let lat = fav.lat, let lon = fav.lon {
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+        return nil
+    }
+    
+    private var markerPopup: some View {
+        // Use the outer RadarView’s popup via a proxy so styling remains consistent
+        RadarViewProxyMarkerPopup(
+            currentCity: currentCity,
+            currentWeather: currentWeather,
+            isLoadingWeather: isLoadingWeather,
+            weatherError: weatherError,
+            close: {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                    showUserPopup = false
+                }
+            }
+        )
+    }
+    
+    private func favoritePopup(for city: String) -> some View {
+        RadarViewProxyFavoritePopup(
+            city: city,
+            selectedFavoriteWeather: selectedFavoriteWeather,
+            isLoadingFavoriteWeather: isLoadingFavoriteWeather,
+            favoriteWeatherError: favoriteWeatherError,
+            close: {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                    selectedFavoriteCity = nil
+                    favoriteWeatherError = nil
+                }
+            }
+        )
+    }
+    
+    // Networking wrappers reusing container service
+    private func fetchWeatherForCurrentLocation(_ coord: CLLocationCoordinate2D) async {
+        if isLoadingWeather { return }
+        isLoadingWeather = true
+        weatherError = nil
+        defer { isLoadingWeather = false }
+        
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(
+                CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+            )
+            let city = placemarks.first?.locality ?? "Current Location"
+            await MainActor.run { self.currentCity = city }
+            
+            let weather = try await weatherService.fetchCurrentWeather(for: city)
+            await MainActor.run {
+                self.currentWeather = weather
+            }
+        } catch is CancellationError {
+        } catch {
+            await MainActor.run {
+                self.weatherError = (error as NSError).localizedDescription
+            }
+        }
+    }
+    
+    private func fetchWeatherForFavorite(city: String) async {
+        if isLoadingFavoriteWeather { return }
+        isLoadingFavoriteWeather = true
+        favoriteWeatherError = nil
+        defer { isLoadingFavoriteWeather = false }
+        
+        do {
+            let weather = try await weatherService.fetchCurrentWeather(for: city)
+            await MainActor.run {
+                self.selectedFavoriteWeather = weather
+            }
+        } catch is CancellationError {
+        } catch {
+            await MainActor.run {
+                self.favoriteWeatherError = (error as NSError).localizedDescription
+            }
+        }
+    }
+}
+
+// MARK: - Lightweight proxy popups to keep Map subview simple
+
+private struct RadarViewProxyMarkerPopup: View {
+    var currentCity: String?
+    var currentWeather: CurrentWeather?
+    var isLoadingWeather: Bool
+    var weatherError: String?
+    var close: () -> Void
+    
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(currentCity ?? "Current Location")
+                    .font(.subheadline.bold())
+                    .foregroundColor(adaptiveForeground())
+                Spacer()
+                Button {
+                    HapticFeedback.light()
+                    close()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(adaptiveForeground())
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .buttonStyle(.plain)
+            }
+            if isLoadingWeather {
+                HStack(spacing: 8) {
+                    ProgressView().tint(.white)
+                    Text("Loading…")
+                        .foregroundColor(adaptiveForeground())
+                        .font(.footnote)
+                }
+            } else if let error = weatherError {
+                Text(error)
+                    .foregroundColor(adaptiveForeground())
+                    .font(.footnote)
+            } else if let cw = currentWeather {
+                HStack(spacing: 10) {
+                    Image(systemName: cw.symbolName)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(adaptiveForeground())
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(cw.condition)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(adaptiveForeground())
+                        HStack(spacing: 8) {
+                            let (t, h, l) = TemperatureUnit.convert(temp: cw.temperature, high: cw.high, low: cw.low)
+                            Text("\(t)°")
+                                .font(.subheadline.bold())
+                                .foregroundColor(adaptiveForeground())
+                            Text(TemperatureUnit.unitLabel)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundColor(.white.opacity(0.85))
+                            Text("H \(h)°  L \(l)°")
+                                .font(.caption)
+                                .foregroundColor(adaptiveForeground())
+                        }
+                    }
+                }
+            } else {
+                Text("Tap marker to load weather.")
+                    .foregroundColor(adaptiveForeground())
+                    .font(.footnote)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.35),
+                            Color.orange.opacity(0.55)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        //        .liquidGlass(cornerRadius: 14, intensity: 0.22)
+        //        .glassEffect()
+        
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.white.opacity(0.25), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
+        .frame(maxWidth: 260)
+    }
+}
+
+private struct RadarViewProxyFavoritePopup: View {
+    var city: String
+    var selectedFavoriteWeather: CurrentWeather?
+    var isLoadingFavoriteWeather: Bool
+    var favoriteWeatherError: String?
+    var close: () -> Void
+    
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(city)
+                    .font(.subheadline.bold())
+                    .foregroundColor(adaptiveForeground())
+                Spacer()
+                Button {
+                    HapticFeedback.light()
+                    close()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(adaptiveForeground())
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .buttonStyle(.plain)
+            }
+            if isLoadingFavoriteWeather {
+                HStack(spacing: 8) {
+                    ProgressView().tint(.white)
+                    Text("Loading…")
+                        .foregroundColor(adaptiveForeground())
+                        .font(.footnote)
+                }
+            } else if let error = favoriteWeatherError {
+                Text(error)
+                    .foregroundColor(adaptiveForeground())
+                    .font(.footnote)
+            } else if let cw = selectedFavoriteWeather, cw.city.caseInsensitiveCompare(city) == .orderedSame {
+                HStack(spacing: 10) {
+                    Image(systemName: cw.symbolName)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(adaptiveForeground())
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(cw.condition)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(adaptiveForeground())
+                        HStack(spacing: 8) {
+                            let (t, h, l) = TemperatureUnit.convert(temp: cw.temperature, high: cw.high, low: cw.low)
+                            Text("\(t)°")
+                                .font(.subheadline.bold())
+                                .foregroundColor(adaptiveForeground())
+                            Text("H \(h)°  L \(l)°")
+                                .font(.caption)
+                                .foregroundColor(adaptiveForeground())
+                            Text(TemperatureUnit.unitLabel)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                    }
+                }
+            } else {
+                Text("Tap marker to load weather.")
+                    .foregroundColor(adaptiveForeground())
+                    .font(.footnote)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.35),
+                            Color.blue.opacity(0.55)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.white.opacity(0.25), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
+        .frame(maxWidth: 260)
+    }
+}
+
 #Preview {
     RadarView()
-        .environmentObject(FavoritesStore()) // for preview only; real app should inject AppContainer's shared store
+        .environmentObject(FavoritesStore())
 }
+

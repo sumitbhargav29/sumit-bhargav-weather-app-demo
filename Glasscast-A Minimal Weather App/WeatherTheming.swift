@@ -20,50 +20,205 @@ enum WeatherTheme: CaseIterable, Equatable {
 }
 
 // MARK: - Background Renderer
-
+ 
 struct WeatherBackground: View {
     let theme: WeatherTheme
+
+    @Environment(\.colorScheme) private var systemColorScheme
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+
+    // Resolve final scheme (system OR user preference)
+    private var effectiveColorScheme: ColorScheme {
+        colorSchemeManager.colorScheme ?? systemColorScheme
+    }
+
+//    // 🌤 Light sky palette (SAME as LightSkyBackground)
+//    private let skyTop = Color(red: 0.92, green: 0.97, blue: 1.0)
+//    private let skyMiddle = Color(red: 0.85, green: 0.93, blue: 0.99)
+//    private let skyBottom = Color(red: 0.78, green: 0.88, blue: 0.97)
+
+    // 🌤 Medium sky palette (slightly deeper than light sky)
+//    private let skyTop = Color(red: 0.84, green: 0.92, blue: 0.98)     // Cooler, slightly deeper top
+//    private let skyMiddle = Color(red: 0.74, green: 0.86, blue: 0.95)  // Medium sky blue
+//    private let skyBottom = Color(red: 0.64, green: 0.80, blue: 0.92)  // Deeper horizon blue
+
+    private let skyTop = Color(red: 0.80, green: 0.90, blue: 0.97)
+    private let skyMiddle = Color(red: 0.68, green: 0.82, blue: 0.94)
+    private let skyBottom = Color(red: 0.56, green: 0.74, blue: 0.90)
+
     
+    // 🌌 Dark sky palette
+    private let darkSkyColors: [Color] = [
+        Color(red: 0.05, green: 0.05, blue: 0.06),
+        Color(red: 0.07, green: 0.08, blue: 0.10),
+        Color(red: 0.08, green: 0.09, blue: 0.12)
+    ]
+
+    private var lightSkyColors: [Color] {
+        [skyTop, skyMiddle, skyBottom]
+    }
+
     var body: some View {
         GeometryReader { proxy in
             let w = proxy.size.width
             let h = proxy.size.height
             let d = min(w, h)
-            
+
             ZStack {
-                // Base graphite gradient
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.05, green: 0.05, blue: 0.06),
-                        Color(red: 0.07, green: 0.08, blue: 0.10),
-                        Color(red: 0.08, green: 0.09, blue: 0.12)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
+                // MARK: - Base Background
+                if effectiveColorScheme == .light {
+                    // 🌤 Light sky background (clean & consistent)
+                    LinearGradient(
+                        colors: lightSkyColors,
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                } else {
+                    // 🌌 Dark background
+                    LinearGradient(
+                        colors: darkSkyColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+                }
+
+                // MARK: - Weather Layers
                 switch theme {
                 case .sunny:
                     SunnyLayer(d: d)
+
                 case .rainy:
                     RainLayer(w: w, h: h, d: d)
+
                 case .stormy:
                     StormLayer(d: d)
+
                 case .coldSnowy:
                     SnowLayer(w: w, h: h, d: d)
+
                 case .windy:
                     WindLayer(d: d)
+
                 case .foggy:
                     FogLayer(d: d)
+
                 case .hotHumid:
                     HotHumidLayer(d: d)
                 }
             }
-            .ignoresSafeArea()
         }
     }
 }
+
+//struct WeatherBackground: View {
+//    let theme: WeatherTheme
+//    @Environment(\.colorScheme) private var systemColorScheme
+//    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+//    
+//    private var effectiveColorScheme: ColorScheme {
+//        if let scheme = colorSchemeManager.colorScheme {
+//            return scheme
+//        }
+//        return systemColorScheme
+//    }
+//    
+//    private var baseGradientColors: [Color] {
+//        if effectiveColorScheme == .light {
+//            // Light mode: modern iOS-style soft neutral gradient
+//            return [
+//                Color(red: 0.96, green: 0.97, blue: 0.99), // Almost white, cool top
+//                Color(red: 0.94, green: 0.95, blue: 0.98), // Soft bluish neutral
+//                Color(red: 0.92, green: 0.94, blue: 0.97), // Light depth layer
+//                Color(red: 0.95, green: 0.96, blue: 0.98)  // Gentle lift at bottom
+//            ]
+//        } else {
+//            // Dark mode: graphite / iOS-style depth
+//            return [
+//                Color(red: 0.05, green: 0.05, blue: 0.06),
+//                Color(red: 0.07, green: 0.08, blue: 0.10),
+//                Color(red: 0.08, green: 0.09, blue: 0.12)
+//            ]
+//        }
+//    }
+//
+//    
+//    var body: some View {
+//        GeometryReader { proxy in
+//            let w = proxy.size.width
+//            let h = proxy.size.height
+//            let d = min(w, h)
+//            
+//            ZStack {
+//                // Base gradient that adapts to color scheme
+//                if effectiveColorScheme == .light {
+//                    // Light mode: Dimmer gradient with subtle depth
+//                    ZStack {
+//                        // Primary gradient - dimmer base
+//                        LinearGradient(
+//                            colors: baseGradientColors,
+//                            startPoint: .topLeading,
+//                            endPoint: .bottomTrailing
+//                        )
+//                        
+//                        // Very subtle radial overlay for minimal depth (much dimmer)
+//                        RadialGradient(
+//                            colors: [
+//                                Color(red: 0.88, green: 0.90, blue: 0.93).opacity(0.3),
+//                                Color(red: 0.85, green: 0.87, blue: 0.90).opacity(0.2),
+//                                .clear
+//                            ],
+//                            center: UnitPoint(x: 0.3, y: 0.2),
+//                            startRadius: 100,
+//                            endRadius: 600
+//                        )
+//                        .blendMode(.multiply)
+//                        
+//                        // Very subtle cool accent (dimmer)
+//                        RadialGradient(
+//                            colors: [
+//                                Color(red: 0.86, green: 0.88, blue: 0.91).opacity(0.15),
+//                                .clear
+//                            ],
+//                            center: UnitPoint(x: 0.7, y: 0.8),
+//                            startRadius: 150,
+//                            endRadius: 500
+//                        )
+//                        .blendMode(.multiply)
+//                    }
+//                    .ignoresSafeArea()
+//                } else {
+//                    // Dark mode: simple gradient
+//                    LinearGradient(
+//                        colors: baseGradientColors,
+//                        startPoint: .topLeading,
+//                        endPoint: .bottomTrailing
+//                    )
+//                    .ignoresSafeArea()
+//                }
+//                
+//                switch theme {
+//                case .sunny:
+//                    SunnyLayer(d: d)
+//                case .rainy:
+//                    RainLayer(w: w, h: h, d: d)
+//                case .stormy:
+//                    StormLayer(d: d)
+//                case .coldSnowy:
+//                    SnowLayer(w: w, h: h, d: d)
+//                case .windy:
+//                    WindLayer(d: d)
+//                case .foggy:
+//                    FogLayer(d: d)
+//                case .hotHumid:
+//                    HotHumidLayer(d: d)
+//                }
+//            }
+//            .ignoresSafeArea()
+//        }
+//    }
+//}
 
 // MARK: - Layers
 

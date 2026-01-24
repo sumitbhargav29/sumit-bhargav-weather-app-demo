@@ -18,7 +18,7 @@ struct SignupView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var agreeToTerms = false
-
+    
     // Auth UI state
     @State private var isSigningUp = false
     @State private var errorMessage: String?
@@ -27,7 +27,7 @@ struct SignupView: View {
     @Environment(\.container) private var container
     
     // Pick the theme for this screen
-    private let screenTheme: WeatherTheme = .sunny
+    private let screenTheme: WeatherTheme = .hotHumid
     
     // Simple validation helpers
     private var isEmailValid: Bool {
@@ -56,7 +56,7 @@ struct SignupView: View {
                 let safeTop = proxy.safeAreaInsets.top
                 let safeBottom = proxy.safeAreaInsets.bottom
                 let minVPadding: CGFloat = 16
-                let contentTopPadding = max(24, safeTop + 8)
+                let contentTopPadding: CGFloat = 0
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 22) {
@@ -68,15 +68,15 @@ struct SignupView: View {
                             EmptyView()
                         }
                         .hidden()
-
+                        
                         // Logo / Title
-                        VStack(spacing: 10) {
+                        VStack(spacing: 4) {
                             Circle()
                                 .fill(.ultraThinMaterial)
-                                .frame(width: 64, height: 64)
+                                .frame(width: 44, height: 44)
                                 .overlay {
                                     Image(systemName: "cloud.sun.fill")
-                                        .font(.system(size: 26, weight: .semibold))
+                                        .font(.system(size: 20, weight: .semibold))
                                         .foregroundStyle(LinearGradient(
                                             colors: [.yellow, .orange],
                                             startPoint: .topLeading,
@@ -86,18 +86,18 @@ struct SignupView: View {
                                 .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
                             
                             Text("Glasscast")
-                                .font(.system(.title, design: .rounded).weight(.bold))
+                                .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.white)
                                 .shadow(color: .black.opacity(0.35), radius: 10)
                             
                             Text("CREATE YOUR ACCOUNT")
-                                .font(.caption.weight(.semibold))
+                                .font(.caption2.weight(.light))
                                 .foregroundColor(.white.opacity(0.65))
                                 .tracking(1.1)
                         }
                         
                         // Liquid Glass Card
-                        VStack(alignment: .leading, spacing: 18) {
+                        VStack(alignment: .leading, spacing: 16) {
                             
                             Text("Join the portal")
                                 .font(.headline.bold())
@@ -124,7 +124,8 @@ struct SignupView: View {
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Email
@@ -144,7 +145,8 @@ struct SignupView: View {
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Password
@@ -162,7 +164,8 @@ struct SignupView: View {
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Confirm Password
@@ -180,7 +183,8 @@ struct SignupView: View {
                                         .tint(.cyan)
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Terms and Conditions
@@ -201,7 +205,6 @@ struct SignupView: View {
                             }
                             .toggleStyle(.switch)
                             .tint(.cyan)
-                            .padding(.top, 2)
                             
                             // Error / Success messages
                             if let error = errorMessage {
@@ -281,7 +284,6 @@ struct SignupView: View {
                     }
                     .padding(.top, contentTopPadding)
                     .padding(.bottom, max(24, safeBottom + 8))
-                    .frame(minHeight: proxy.size.height) // centers content when plenty of space
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
@@ -298,7 +300,7 @@ struct SignupView: View {
             Text(successMessage ?? "")
         }
     }
-
+    
     // MARK: - Supabase Signup
     @MainActor
     private func signUp() async {
@@ -307,7 +309,7 @@ struct SignupView: View {
         successMessage = nil
         isSigningUp = true
         defer { isSigningUp = false }
-
+        
         do {
             // Pass full name to user metadata so you can use it later.
             let metadata: [String: AnyJSON] = ["full_name": .string(fullName)]
@@ -316,7 +318,7 @@ struct SignupView: View {
                 password: password,
                 data: metadata
             )
-
+            
             // If email confirmations are enabled, session will be nil and a confirmation email is sent.
             if response.session == nil {
                 HapticFeedback.success()

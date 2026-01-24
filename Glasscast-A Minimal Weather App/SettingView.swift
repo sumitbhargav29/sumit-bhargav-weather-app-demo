@@ -13,7 +13,7 @@ import Auth
 
 struct SettingsView: View {
     // Keep a consistent background
-    private let theme: WeatherTheme = .windy
+    private let theme: WeatherTheme = .sunny
     
     // Persist temperature unit preference
     @AppStorage("useCelsius") private var useCelsius: Bool = true
@@ -23,6 +23,14 @@ struct SettingsView: View {
     @AppStorage("pressureUnitIsHpa") private var pressureUnitIsHpa: Bool = true // true: hPa, false: inHg
     @AppStorage("notificationsSevereAlerts") private var severeAlerts: Bool = true
     @AppStorage("notificationsDailySummary") private var dailySummary: Bool = false
+    
+    // Color scheme preference
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+    
+    // Adaptive foreground color helper
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
     
     // Local sign-out navigation
     @State private var isSigningOut = false
@@ -102,6 +110,13 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 16)
                     
+                    // Appearance section
+                    sectionHeader(title: "Appearance")
+                    VStack(spacing: 12) {
+                        appearanceModeRow
+                    }
+                    .padding(.horizontal, 16)
+                    
                     // Notifications section
                     sectionHeader(title: "Notifications")
                     VStack(spacing: 12) {
@@ -132,28 +147,32 @@ struct SettingsView: View {
                                     ProgressView().tint(.white)
                                 } else {
                                     Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        .foregroundStyle(Color.red)
                                         .font(.headline)
                                 }
                                 Text(isSigningOut ? "Signing Out..." : "Sign Out")
+                                    .foregroundStyle(Color.red)
                                     .font(.headline.bold())
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(adaptiveForeground())
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        Color.red.opacity(0.95),
-                                        Color.pink.opacity(0.85)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            //                            .background(
+                            //                                LinearGradient(
+                            //                                    colors: [
+                            //                                        Color.red.opacity(0.95),
+                            //                                        Color.pink.opacity(0.85)
+                            //                                    ],
+                            //                                    startPoint: .topLeading,
+                            //                                    endPoint: .bottomTrailing
+                            //                                )
+                            //                            )
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .shadow(color: .red.opacity(0.45), radius: 20, y: 8)
                         }
+                        .glassEffect()
                         .disabled(isSigningOut)
+                        .frame(maxWidth: 160,maxHeight: 50)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 6)
@@ -205,10 +224,10 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Settings")
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text("Basic preferences")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
             
             Spacer()
@@ -243,7 +262,7 @@ struct SettingsView: View {
                         .overlay {
                             Image(systemName: "checkmark.seal.fill")
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(adaptiveForeground())
                         }
                         .offset(x: 22, y: 22)
                         .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
@@ -253,16 +272,16 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(profileDisplayName)
                     .font(.headline.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 
                 Text(profileEmail)
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(adaptiveForeground(opacity: 0.75))
                 
                 if profileIsPremium {
                     Text("PREMIUM GLASS ACCOUNT")
                         .font(.caption2.weight(.semibold))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(adaptiveForeground(opacity: 0.9))
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
                         .background(
@@ -283,8 +302,9 @@ struct SettingsView: View {
             Spacer()
         }
         .padding(16)
-        .liquidGlass(cornerRadius: 20, intensity: 0.40)
-        .padding(.horizontal, 16)
+//        .liquidGlass(cornerRadius: 20, intensity: 0.40)
+        .glassEffect()
+         .padding(.horizontal, 16)
     }
     
     // MARK: - Section Header
@@ -293,7 +313,7 @@ struct SettingsView: View {
         HStack {
             Text(title.uppercased())
                 .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.75))
+                .foregroundColor(adaptiveForeground(opacity: 0.75))
             Spacer()
         }
         .padding(.horizontal, 16)
@@ -309,16 +329,16 @@ struct SettingsView: View {
                 .overlay {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(adaptiveForeground(opacity: 0.9))
                 }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.subheadline.bold())
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
             
             Spacer()
@@ -327,7 +347,8 @@ struct SettingsView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        .glassEffect()
     }
     
     private func unitToggle(isOn: Binding<Bool>, onLabel: String, offLabel: String) -> some View {
@@ -337,9 +358,90 @@ struct SettingsView: View {
                 .tint(.cyan)
             Text(isOn.wrappedValue ? onLabel : offLabel)
                 .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.85))
+                .foregroundColor(adaptiveForeground(opacity: 0.85))
                 .frame(minWidth: 40)
         }
+    }
+    
+    private var appearanceModeRow: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(.ultraThinMaterial)
+                .frame(width: 36, height: 36)
+                .overlay {
+                    Image(systemName: colorSchemeManager.isDarkMode ? "moon.fill" : colorSchemeManager.isLightMode ? "sun.max.fill" : "circle.lefthalf.filled")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(adaptiveForeground(opacity: 0.9))
+                }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Appearance Mode")
+                    .foregroundColor(adaptiveForeground())
+                    .font(.subheadline.bold())
+                Text(colorSchemeManager.isDarkMode ? "Dark Mode" : colorSchemeManager.isLightMode ? "Light Mode" : "System")
+                    .font(.caption)
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
+            }
+            
+            Spacer()
+            
+            Menu {
+                Button {
+                    HapticFeedback.light()
+                    colorSchemeManager.setLightMode()
+                } label: {
+                    HStack {
+                        Text("Light Mode")
+                        if colorSchemeManager.isLightMode {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+                
+                Button {
+                    HapticFeedback.light()
+                    colorSchemeManager.setDarkMode()
+                } label: {
+                    HStack {
+                        Text("Dark Mode")
+                        if colorSchemeManager.isDarkMode {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+                
+                Button {
+                    HapticFeedback.light()
+                    colorSchemeManager.setSystemMode()
+                } label: {
+                    HStack {
+                        Text("System")
+                        if !colorSchemeManager.isDarkMode && !colorSchemeManager.isLightMode {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(colorSchemeManager.isDarkMode ? "Dark" : colorSchemeManager.isLightMode ? "Light" : "System")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(adaptiveForeground(opacity: 0.85))
+                    Image(systemName: "chevron.down")
+                        .font(.caption2)
+                        .foregroundColor(adaptiveForeground(opacity: 0.65))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.ultraThinMaterial)
+                )
+            }
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        .glassEffect()
     }
     
     private func toggleRow(icon: String, title: String, subtitle: String, isOn: Binding<Bool>) -> some View {
@@ -350,16 +452,16 @@ struct SettingsView: View {
                 .overlay {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(adaptiveForeground(opacity: 0.9))
                 }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.subheadline.bold())
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
             
             Spacer()
@@ -370,7 +472,8 @@ struct SettingsView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        .glassEffect()
     }
     
     private func navigationRow(icon: String, title: String, subtitle: String, trailingBadge: AnyView, action: @escaping () -> Void) -> some View {
@@ -382,16 +485,16 @@ struct SettingsView: View {
                     .overlay {
                         Image(systemName: icon)
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.9))
+                            .foregroundStyle(adaptiveForeground(opacity: 0.9))
                     }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .foregroundColor(.white)
+                        .foregroundColor(adaptiveForeground())
                         .font(.subheadline.bold())
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.65))
+                        .foregroundColor(adaptiveForeground(opacity: 0.65))
                 }
                 
                 Spacer()
@@ -403,7 +506,8 @@ struct SettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+//        .liquidGlass(cornerRadius: 16, intensity: 0.30)
+        .glassEffect()
     }
     
     private func statusBadge(text: String, color: Color) -> some View {
@@ -426,10 +530,10 @@ struct SettingsView: View {
         VStack(spacing: 4) {
             Text("Demo by Sumit bhargav")
                 .font(.caption2.weight(.semibold))
-                .foregroundColor(.white.opacity(0.55))
+                .foregroundColor(adaptiveForeground(opacity: 0.55))
             Text("sumitbhargav2994@gmail.com")
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.45))
+                .foregroundColor(adaptiveForeground(opacity: 0.45))
         }
         .padding(.top, 8)
     }

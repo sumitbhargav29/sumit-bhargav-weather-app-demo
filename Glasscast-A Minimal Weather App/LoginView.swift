@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Combine
- 
+
 struct LoginView: View {
     
     @State private var email = ""
@@ -25,7 +25,7 @@ struct LoginView: View {
     
     @Environment(\.container) private var container
     private var authService: AuthService { container.authService }
-
+    
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .coldSnowy
     
@@ -62,8 +62,8 @@ struct LoginView: View {
                         // Invisible NavigationLink to HomeView, triggered by navigateToHome
                         NavigationLink(isActive: $navigateToHome) {
                             TabContainerView(homeModel: container.makeHomeViewModel())
-
-//                            TabContainerView()
+                            
+                            //                            TabContainerView()
                                 .navigationBarBackButtonHidden(true)
                         } label: {
                             EmptyView()
@@ -74,10 +74,10 @@ struct LoginView: View {
                         VStack(spacing: 10) {
                             Circle()
                                 .fill(.ultraThinMaterial)
-                                .frame(width: 64, height: 64)
+                                .frame(width: 44, height: 44)
                                 .overlay {
                                     Image(systemName: "cloud.sun.rain.fill")
-                                        .font(.system(size: 26, weight: .semibold))
+                                        .font(.system(size: 20, weight: .semibold))
                                         .foregroundStyle(LinearGradient(
                                             colors: [.cyan, .blue],
                                             startPoint: .topLeading,
@@ -87,12 +87,12 @@ struct LoginView: View {
                                 .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
                             
                             Text("Glasscast")
-                                .font(.system(.title, design: .rounded).weight(.bold))
+                                .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.white)
                                 .shadow(color: .black.opacity(0.35), radius: 10)
                             
                             Text("SIGN IN TO YOUR WEATHER PORTAL")
-                                .font(.caption.weight(.semibold))
+                                .font(.caption2.weight(.light))
                                 .foregroundColor(.white.opacity(0.65))
                                 .tracking(1.1)
                         }
@@ -131,7 +131,8 @@ struct LoginView: View {
                                         }
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Password
@@ -188,7 +189,8 @@ struct LoginView: View {
                                     .buttonStyle(.plain)
                                 }
                                 .padding(12)
-                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                //                                .liquidGlass(cornerRadius: 16, intensity: 0.25)
+                                .glassEffect()
                             }
                             
                             // Sign In Button
@@ -239,7 +241,7 @@ struct LoginView: View {
                             .font(.footnote)
                             .frame(maxWidth: .infinity)
                             
-                            #if DEBUG
+#if DEBUG
                             // Debug: Raw REST probe button
                             Button {
                                 Task {
@@ -258,12 +260,13 @@ struct LoginView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             .padding(.top, 4)
-                            #endif
+#endif
                         }
                         .padding(18)
-                        .liquidGlass(cornerRadius: 28, intensity: 0.45)
+                        .liquidGlass(cornerRadius: 16, intensity: 0.25)
                         .padding(.horizontal, 16)
-                        .frame(maxWidth: 600) // keep it elegant on larger devices
+                        .frame(maxWidth: 600)
+                        
                         
                         // Footer
                         HStack(spacing: 6) {
@@ -290,13 +293,13 @@ struct LoginView: View {
         } message: {
             Text(errorMessage ?? "An unknown error occurred. Please try again.")
         }
-        #if DEBUG
+#if DEBUG
         .alert("Probe Output", isPresented: $showProbeAlert) {
             Button("OK", role: .cancel) { showProbeAlert = false }
         } message: {
             Text(probeOutput ?? "No output")
         }
-        #endif
+#endif
     }
     
     private func attemptSignIn() {
@@ -344,7 +347,7 @@ struct LoginView: View {
         }
     }
     
-    #if DEBUG
+#if DEBUG
     private func runProbe() async {
         let e = email.trimmingCharacters(in: .whitespacesAndNewlines)
         let p = password.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -362,7 +365,7 @@ struct LoginView: View {
         }
         showProbeAlert = true
     }
-    #endif
+#endif
     
     // MARK: - Error presentation helpers
     

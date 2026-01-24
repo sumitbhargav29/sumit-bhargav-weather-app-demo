@@ -28,8 +28,8 @@ struct SearchCityView: View {
     @Binding var selectedTab: Int
     
     // Keep a consistent background with app
-    private let theme: WeatherTheme = .foggy
-    
+    private let theme: WeatherTheme = .sunny
+
     // Debounce task
     @State private var searchTask: Task<Void, Never>?
     // Clear all confirmation
@@ -37,6 +37,14 @@ struct SearchCityView: View {
     
     // Track focus for the search field
     @FocusState private var isSearchFocused: Bool
+    
+    // Color scheme manager for adaptive colors
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+    
+    // Adaptive foreground color helper
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
     
     // MARK: - WeatherAPI search endpoint model
     struct CitySearchResult: Identifiable, Equatable {
@@ -75,7 +83,7 @@ struct SearchCityView: View {
     
     var body: some View {
         ZStack {
-            WeatherBackground(theme: theme).ignoresSafeArea()
+                        WeatherBackground(theme: theme).ignoresSafeArea()
             
             GeometryReader { proxy in
                 let safeTop = proxy.safeAreaInsets.top
@@ -98,13 +106,15 @@ struct SearchCityView: View {
                         
                         Spacer(minLength: 16)
                     }
+//                    .lightSkyBackground()
                     .padding(.top, contentTopPadding)
                     .padding(.bottom, max(24, safeBottom + 8))
                     .frame(maxWidth: 700)
                 }
             }
+            
         }
-        .task {
+          .task {
             // Load favorites from the active backend (Supabase when mockMode is false)
             await favorites.load()
         }
@@ -129,10 +139,10 @@ struct SearchCityView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Search for a City")
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text("Find and save locations")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(adaptiveForeground(opacity: 0.65))
             }
             
             Spacer()
@@ -144,13 +154,13 @@ struct SearchCityView: View {
     private var searchField: some View {
         HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(adaptiveForeground(opacity: 0.8))
                 .font(.system(size: 18, weight: .semibold))
             
             TextField("Find a city…", text: $query)
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
                 .tint(.cyan)
                 .font(.system(.body, design: .rounded))
                 .focused($isSearchFocused)
@@ -165,7 +175,7 @@ struct SearchCityView: View {
                     weatherCache.removeAll()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(adaptiveForeground(opacity: 0.75))
                         .font(.system(size: 18, weight: .semibold))
                 }
                 .buttonStyle(.plain)
@@ -173,7 +183,8 @@ struct SearchCityView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 18)
-        .liquidGlass(cornerRadius: 22, intensity: 0.30)
+//        .liquidGlass(cornerRadius: 22, intensity: 0.30)
+        .glassEffect()
         .padding(.horizontal, 16)
     }
     
@@ -183,7 +194,7 @@ struct SearchCityView: View {
             HStack(spacing: 12) {
                 Text("FAVORITES")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(adaptiveForeground(opacity: 0.75))
                 
                 Spacer()
                 
@@ -222,7 +233,7 @@ struct SearchCityView: View {
             if favorites.favorites.isEmpty {
                 Text("No favorites yet. Search and add cities you care about.")
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(adaptiveForeground(opacity: 0.7))
                     .padding(.horizontal, 16)
             } else {
                 VStack(spacing: 16) {
@@ -274,15 +285,15 @@ struct SearchCityView: View {
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(city)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.system(.headline, design: .rounded).weight(.bold))
                 HStack(spacing: 8) {
                     Image(systemName: icon)
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(adaptiveForeground(opacity: 0.9))
                         .font(.system(size: 14, weight: .semibold))
                     Text(mood)
                         .font(.system(.caption, design: .rounded))
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(adaptiveForeground(opacity: 0.75))
                 }
             }
             
@@ -291,10 +302,10 @@ struct SearchCityView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(tempText)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text(TemperatureUnit.unitLabel)
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(adaptiveForeground(opacity: 0.6))
             }
             
             Button {
@@ -307,10 +318,12 @@ struct SearchCityView: View {
             }
             .buttonStyle(.plain)
         }
-        .frame(minHeight: 64)
+        .frame(minHeight: 54)
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .liquidGlass(cornerRadius: 24, intensity: 0.35)
+//        .liquidGlass(cornerRadius: 24, intensity: 0.35)
+        .glassEffect()
+
     }
     
     // MARK: - Results Section (real API search)
@@ -324,7 +337,7 @@ struct SearchCityView: View {
                     HStack {
                         Text("SEARCH RESULTS")
                             .font(.caption.weight(.semibold))
-                            .foregroundColor(.white.opacity(0.75))
+                            .foregroundColor(adaptiveForeground(opacity: 0.75))
                         Spacer()
                     }
                     .padding(.horizontal, 16)
@@ -379,18 +392,18 @@ struct SearchCityView: View {
                 Circle()
                     .fill(.ultraThinMaterial)
                 Image(systemName: icon)
-                    .foregroundStyle(.white.opacity(0.95))
+                    .foregroundStyle(adaptiveForeground(opacity: 0.95))
                     .font(.system(size: 20, weight: .semibold))
             }
             .frame(width: 46, height: 46)
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(city.name)
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                     .font(.system(.headline, design: .rounded).weight(.bold))
                 Text("\(city.region.isEmpty ? city.country : "\(city.region), \(city.country)")")
                     .font(.system(.caption, design: .rounded))
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(adaptiveForeground(opacity: 0.75))
             }
             
             Spacer(minLength: 12)
@@ -398,10 +411,10 @@ struct SearchCityView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(tempText)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(adaptiveForeground())
                 Text(TemperatureUnit.unitLabel)
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(adaptiveForeground(opacity: 0.6))
             }
             
             Button {
@@ -416,10 +429,11 @@ struct SearchCityView: View {
             }
             .buttonStyle(.plain)
         }
-        .frame(minHeight: 68)
+        .frame(minHeight: 54)
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .liquidGlass(cornerRadius: 26, intensity: 0.35)
+         .glassEffect()
+
     }
     
     // MARK: - Debounced search using WeatherAPI
