@@ -16,6 +16,10 @@ struct HomeView: View {
     @StateObject private var model: HomeViewModel
     @StateObject private var locator = LocationProvider()
     @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+    @Environment(\.colorScheme) private var systemScheme
+    private var effectiveScheme: ColorScheme {
+        colorSchemeManager.colorScheme ?? systemScheme
+    }
     private let geocoder = CLGeocoder()
     
     // Units
@@ -27,9 +31,7 @@ struct HomeView: View {
     @AppStorage("notificationsDailySummary") private var dailySummary: Bool = false
     
     // Background theme
-    
     private let theme: WeatherTheme = .sunny
-    
     
     // Adaptive foreground color helper
     private func adaptiveForeground(opacity: Double = 1.0) -> Color {
@@ -245,7 +247,11 @@ struct HomeView: View {
                 if let symbol = model.current?.symbolName {
                     Image(systemName: symbol)
                         .font(.system(size: 36, weight: .semibold))
-                        .foregroundStyle(adaptiveForeground())
+                        .foregroundStyle(
+                            (effectiveScheme == .light && symbol == "sun.max.fill")
+                            ? AnyShapeStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            : AnyShapeStyle(adaptiveForeground())
+                        )
                         .shadow(color: .black.opacity(0.35), radius: 10, y: 4)
                 }
             }
@@ -307,7 +313,11 @@ struct HomeView: View {
                             
                             Image(systemName: day.symbolName)
                                 .font(.system(size: 24, weight: .semibold))
-                                .foregroundStyle(adaptiveForeground())
+                                .foregroundStyle(
+                                    (effectiveScheme == .light && day.symbolName == "sun.max.fill")
+                                    ? AnyShapeStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                    : AnyShapeStyle(adaptiveForeground())
+                                )
                             
                             HStack(spacing: 6) {
                                 let (h, l) = TemperatureUnit.convert(high: day.high, low: day.low)

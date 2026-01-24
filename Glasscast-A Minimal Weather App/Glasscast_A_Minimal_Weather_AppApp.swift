@@ -11,7 +11,7 @@ import SwiftUI
 struct Glasscast_A_Minimal_Weather_AppApp: App {
     // Create one shared container for the whole app
     @StateObject private var container = AppContainer()
-//    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
+    @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -20,8 +20,8 @@ struct Glasscast_A_Minimal_Weather_AppApp: App {
                 .environment(\.container, container)
                 // Expose the single FavoritesStore instance app-wide
                 .environmentObject(container.favoritesStore)
-                // Apply color scheme preference
-//                .preferredColorScheme(colorSchemeManager.colorScheme)
+                // Apply color scheme preference (nil = system)
+                .preferredColorScheme(colorSchemeManager.colorScheme)
         }
     }
 }

@@ -14,9 +14,9 @@
             filePath = "Glasscast-A Minimal Weather App/HomeView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "325"
-            endingLineNumber = "325"
-            landmarkName = "forecastStrip"
+            startingLineNumber = "335"
+            endingLineNumber = "335"
+            landmarkName = "sunriseSunsetCard"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
