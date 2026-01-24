@@ -337,10 +337,10 @@ struct RadarView: View {
         )
          .glassEffect()
         
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.25), lineWidth: 1)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 14, style: .continuous)
+//                .stroke(.white.opacity(0.25), lineWidth: 1)
+//        )
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
@@ -421,13 +421,13 @@ struct RadarView: View {
                     )
                 )
         )
-        //        .liquidGlass(cornerRadius: 14, intensity: 0.22)
+//                .liquidGlass(cornerRadius: 14, intensity: 0.22)
         .glassEffect()
         
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.25), lineWidth: 1)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 14, style: .continuous)
+//                .stroke(.white.opacity(0.25), lineWidth: 1)
+//        )
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
@@ -833,12 +833,12 @@ private struct RadarViewProxyMarkerPopup: View {
                 )
         )
         //        .liquidGlass(cornerRadius: 14, intensity: 0.22)
-        //        .glassEffect()
+                .glassEffect()
         
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.25), lineWidth: 1)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 14, style: .continuous)
+//                .stroke(.white.opacity(0.25), lineWidth: 1)
+//        )
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
@@ -926,10 +926,11 @@ private struct RadarViewProxyFavoritePopup: View {
                     )
                 )
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.25), lineWidth: 1)
-        )
+        .glassEffect()
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 14, style: .continuous)
+//                .stroke(.white.opacity(0.25), lineWidth: 1)
+//        )
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
