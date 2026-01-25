@@ -9,37 +9,24 @@ import SwiftUI
 import Combine
 
 struct LoginView: View {
-    
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isSigningIn = false
-    @State private var navigateToHome = false
-    @FocusState private var focusedField: Field?
-    @State private var showPassword: Bool = false
-    @State private var errorMessage: String? = nil
-    @State private var showErrorAlert: Bool = false
-    
-    // Debug probe output
-    @State private var probeOutput: String? = nil
-    @State private var showProbeAlert: Bool = false
-    
     @Environment(\.container) private var container
-    private var authService: AuthService { container.authService }
     
-    // Pick the theme for this screen
-    private let screenTheme: WeatherTheme = .coldSnowy
+    // MVVM: ViewModel owns all logic/state
+    @StateObject private var viewModel: LoginViewModel
     
-    private enum Field {
+    // Local focus management stays in the View (FocusState requires View property wrapper)
+    @FocusState private var focusedField: Field?
+    private enum Field: Hashable {
         case email
         case password
     }
     
-    // Basic validation
-    private var isEmailValid: Bool {
-        email.contains("@") && email.contains(".")
-    }
-    private var isFormValid: Bool {
-        isEmailValid && !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    // Pick the theme for this screen
+    private let screenTheme: WeatherTheme = .coldSnowy
+    
+    init(container: AppContainer? = nil) {
+        let resolved = container ?? AppContainer()
+        _viewModel = StateObject(wrappedValue: LoginViewModel(container: resolved))
     }
     
     var body: some View {
@@ -60,7 +47,7 @@ struct LoginView: View {
                     VStack(spacing: 24) {
                         
                         // Invisible NavigationLink to HomeView, triggered by navigateToHome
-                        NavigationLink(isActive: $navigateToHome) {
+                        NavigationLink(isActive: $viewModel.navigateToHome) {
                             TabContainerView(homeModel: container.makeHomeViewModel())
                                 .navigationBarBackButtonHidden(true)
                         } label: {
@@ -68,7 +55,7 @@ struct LoginView: View {
                         }
                         .hidden()
                         
-                        // Logo / Title
+                        // Header (kept identical)
                         VStack(spacing: 10) {
                             Circle()
                                 .fill(.ultraThinMaterial)
@@ -116,7 +103,7 @@ struct LoginView: View {
                                     Image(systemName: AppConstants.Symbols.envelopeFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    TextField(AppConstants.UI.emailPlaceholder, text: $email)
+                                    TextField(AppConstants.UI.emailPlaceholder, text: $viewModel.email)
                                         .textInputAutocapitalization(.never)
                                         .keyboardType(.emailAddress)
                                         .disableAutocorrection(true)
@@ -155,32 +142,32 @@ struct LoginView: View {
                                     Image(systemName: AppConstants.Symbols.lockFill)
                                         .foregroundColor(.white.opacity(0.6))
                                     
-                                    if showPassword {
-                                        TextField(AppConstants.UI.yourPassword, text: $password)
+                                    if viewModel.showPassword {
+                                        TextField(AppConstants.UI.yourPassword, text: $viewModel.password)
                                             .foregroundColor(.white)
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
                                             .submitLabel(.go)
                                             .onSubmit {
-                                                attemptSignIn()
+                                                viewModel.signInTapped()
                                             }
                                     } else {
-                                        SecureField(AppConstants.UI.yourPassword, text: $password)
+                                        SecureField(AppConstants.UI.yourPassword, text: $viewModel.password)
                                             .foregroundColor(.white)
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
                                             .submitLabel(.go)
                                             .onSubmit {
-                                                attemptSignIn()
+                                                viewModel.signInTapped()
                                             }
                                     }
                                     
                                     Button {
                                         withAnimation(.easeInOut(duration: 0.15)) {
-                                            showPassword.toggle()
+                                            viewModel.showPassword.toggle()
                                         }
                                     } label: {
-                                        Image(systemName: showPassword ? AppConstants.Symbols.eyeSlashFill : AppConstants.Symbols.eyeFillAlt)
+                                        Image(systemName: viewModel.showPassword ? AppConstants.Symbols.eyeSlashFill : AppConstants.Symbols.eyeFillAlt)
                                             .foregroundColor(.white.opacity(0.75))
                                     }
                                     .buttonStyle(.plain)
@@ -191,15 +178,15 @@ struct LoginView: View {
                             
                             // Sign In Button
                             Button {
-                                attemptSignIn()
+                                viewModel.signInTapped()
                             } label: {
                                 HStack(spacing: 10) {
-                                    if isSigningIn {
+                                    if viewModel.isSigningIn {
                                         ProgressView()
                                             .tint(.white)
                                     }
-                                    Text(isSigningIn ? AppConstants.UI.signingIn : AppConstants.UI.signInAction).bold()
-                                    if !isSigningIn {
+                                    Text(viewModel.isSigningIn ? AppConstants.UI.signingIn : AppConstants.UI.signInAction).bold()
+                                    if !viewModel.isSigningIn {
                                         Image(systemName: AppConstants.Symbols.arrowRight)
                                     }
                                 }
@@ -219,8 +206,8 @@ struct LoginView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .shadow(color: .cyan.opacity(0.45), radius: 20, y: 8)
                             }
-                            .disabled(isSigningIn || !isFormValid)
-                            .opacity((isSigningIn || !isFormValid) ? 0.55 : 1.0)
+                            .disabled(viewModel.isSigningIn || !viewModel.isFormValid)
+                            .opacity((viewModel.isSigningIn || !viewModel.isFormValid) ? 0.55 : 1.0)
                             
                             // Navigate to Signup
                             HStack(spacing: 6) {
@@ -239,30 +226,29 @@ struct LoginView: View {
                             
 #if DEBUG
                             // Debug: Raw REST probe button
-                            Button {
-                                Task {
-                                    await runProbe()
-                                }
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: AppConstants.Symbols.wrenchScrewdriverFill)
-                                    Text(AppConstants.UI.debugSignInProbe)
-                                }
-                                .font(.footnote.bold())
-                                .foregroundColor(.white)
-                                .padding(.vertical, 10)
-                                .frame(maxWidth: .infinity)
-                                .background(Color.orange.opacity(0.25))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .padding(.top, 4)
+                            //                            Button {
+                            //                                Task {
+                            //                                    await viewModel.runProbe()
+                            //                                }
+                            //                            } label: {
+                            //                                HStack(spacing: 8) {
+                            //                                    Image(systemName: AppConstants.Symbols.wrenchScrewdriverFill)
+                            //                                    Text(AppConstants.UI.debugSignInProbe)
+                            //                                }
+                            //                                .font(.footnote.bold())
+                            //                                .foregroundColor(.white)
+                            //                                .padding(.vertical, 10)
+                            //                                .frame(maxWidth: .infinity)
+                            //                                .background(Color.orange.opacity(0.25))
+                            //                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            //                            }
+                            //                            .padding(.top, 4)
 #endif
                         }
                         .padding(18)
                         .liquidGlass(cornerRadius: 16, intensity: 0.25)
                         .padding(.horizontal, 16)
                         .frame(maxWidth: 600)
-                        
                         
                         // Footer
                         HStack(spacing: 6) {
@@ -282,128 +268,20 @@ struct LoginView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .alert(AppConstants.UI.signInFailedTitle, isPresented: $showErrorAlert) {
+        .alert(AppConstants.UI.signInFailedTitle, isPresented: $viewModel.showErrorAlert) {
             Button(AppConstants.UI.ok, role: .cancel) {
-                showErrorAlert = false
+                viewModel.showErrorAlert = false
             }
         } message: {
-            Text(errorMessage ?? AppConstants.UI.unknownError)
+            Text(viewModel.errorMessage ?? AppConstants.UI.unknownError)
         }
 #if DEBUG
-        .alert(AppConstants.UI.probeOutput, isPresented: $showProbeAlert) {
-            Button(AppConstants.UI.ok, role: .cancel) { showProbeAlert = false }
-        } message: {
-            Text(probeOutput ?? AppConstants.UI.placeholderDash)
-        }
+        //        .alert(AppConstants.UI.probeOutput, isPresented: $viewModel.showProbeAlert) {
+        //            Button(AppConstants.UI.ok, role: .cancel) { viewModel.showProbeAlert = false }
+        //        } message: {
+        //            Text(viewModel.probeOutput ?? AppConstants.UI.placeholderDash)
+        //        }
 #endif
-    }
-    
-    private func attemptSignIn() {
-        guard !isSigningIn else { return }
-        // Trim inputs to avoid common mistakes
-        email = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        password = password.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard isFormValid else {
-            presentError(AppConstants.UI.pleaseEnterValidEmailPassword)
-            return
-        }
-        
-        errorMessage = nil
-        showErrorAlert = false
-        isSigningIn = true
-        focusedField = nil
-        
-        Task {
-            do {
-                try await authService.signIn(email: email, password: password)
-                // On success, navigate to the main app
-                await MainActor.run {
-                    HapticFeedback.success()
-                    isSigningIn = false
-                    navigateToHome = true
-                }
-            } catch {
-                // Try fallback path
-                do {
-                    try await authService.signInFallback(email: email, password: password)
-                    await MainActor.run {
-                        HapticFeedback.success()
-                        isSigningIn = false
-                        navigateToHome = true
-                    }
-                } catch {
-                    let friendly = friendlyAuthError(from: error)
-                    await MainActor.run {
-                        HapticFeedback.error()
-                        isSigningIn = false
-                        presentError(friendly)
-                    }
-                }
-            }
-        }
-    }
-    
-#if DEBUG
-    private func runProbe() async {
-        let e = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        let p = password.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !e.isEmpty, !p.isEmpty else {
-            probeOutput = AppConstants.UI.enterEmailAndPasswordFirst
-            showProbeAlert = true
-            return
-        }
-        do {
-            let output = try await SupabaseManager.shared.rawSignInProbe(email: e, password: p)
-            probeOutput = output
-        } catch {
-            let ns = error as NSError
-            probeOutput = "Probe failed: \(ns.localizedDescription)\n(domain=\(ns.domain) code=\(ns.code))"
-        }
-        showProbeAlert = true
-    }
-#endif
-    
-    // MARK: - Error presentation helpers
-    
-    private func presentError(_ message: String) {
-        errorMessage = message
-        showErrorAlert = true
-    }
-    
-    // Map opaque/technical errors to friendly messages for users.
-    private func friendlyAuthError(from error: Error) -> String {
-        let ns = error as NSError
-        let raw = ns.localizedDescription
-        
-        // Common opaque decoding error from SDK when response is unexpected
-        if raw == AppConstants.UI.loginDecodingError1 ||
-            raw == AppConstants.UI.loginDecodingError2 {
-            return AppConstants.UI.loginDecodingFriendly
-        }
-        
-        // Network offline / connectivity
-        if ns.domain == NSURLErrorDomain {
-            switch ns.code {
-            case NSURLErrorNotConnectedToInternet:
-                return AppConstants.UI.loginOffline
-            case NSURLErrorTimedOut:
-                return AppConstants.UI.loginTimeout
-            default:
-                break
-            }
-        }
-        
-        // Supabase / auth typical messages we can clarify a bit
-        let lowered = raw.lowercased()
-        if lowered.contains("invalid login") || lowered.contains("invalid email or password") {
-            return AppConstants.UI.loginInvalidCredentials
-        }
-        if lowered.contains("email not confirmed") || lowered.contains("confirm") {
-            return AppConstants.UI.loginConfirmEmail
-        }
-        
-        // Fallback to the original message
-        return raw
     }
 }
 

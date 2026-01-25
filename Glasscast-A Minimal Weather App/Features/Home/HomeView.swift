@@ -605,5 +605,15 @@ private struct Arc: Shape {
 }
 
 #Preview {
-    HomeView(model: HomeViewModel(service: MockWeatherService()))
+    // Preview-safe container using MockWeatherService for deterministic data.
+    let previewContainer = AppContainer(
+        weatherService: MockWeatherService()
+    )
+    // EnvironmentObject required by HomeView
+    let selected = SelectedCityStore()
+    selected.set(city: "Cupertino", coordinate: nil)
+    
+    return HomeView(model: HomeViewModel(service: MockWeatherService()))
+        .environment(\.container, previewContainer)
+        .environmentObject(selected)
 }

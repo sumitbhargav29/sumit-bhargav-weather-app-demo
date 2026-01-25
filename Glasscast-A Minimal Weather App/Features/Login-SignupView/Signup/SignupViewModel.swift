@@ -55,8 +55,14 @@ final class SignupViewModel: ObservableObject {
     }
     
     func acknowledgeSuccess() {
-        successMessage = nil
-        navigateToLogin = true
+        // Keep the success message visible for a short period, then navigate.
+        Task { @MainActor in
+            // 2–3 seconds delay; adjust as needed
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+            // Optional: extend to 3 seconds by changing to 3_000_000_000
+            successMessage = nil
+            navigateToLogin = true
+        }
     }
     
     // MARK: - Signup
@@ -83,4 +89,3 @@ final class SignupViewModel: ObservableObject {
         }
     }
 }
-
