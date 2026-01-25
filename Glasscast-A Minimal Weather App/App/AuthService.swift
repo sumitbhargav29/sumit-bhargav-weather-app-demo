@@ -12,6 +12,11 @@ import Supabase
 /// High-level authentication API used by views.
 protocol AuthService {
     var client: SupabaseClient { get }
+
+    // Sign up a new user with optional user metadata.
+    @discardableResult
+    func signUp(email: String, password: String, data: [String: AnyJSON]?) async throws -> AuthResponse
+
     func signIn(email: String, password: String) async throws
     func signInFallback(email: String, password: String) async throws
     func signOut() async throws
@@ -29,6 +34,15 @@ final class SupabaseAuthService: AuthService {
         manager.client
     }
 
+    @discardableResult
+    func signUp(email: String, password: String, data: [String: AnyJSON]? = nil) async throws -> AuthResponse {
+        try await manager.client.auth.signUp(
+            email: email,
+            password: password,
+            data: data
+        )
+    }
+
     func signIn(email: String, password: String) async throws {
         try await manager.signIn(email: email, password: password)
     }
@@ -41,4 +55,3 @@ final class SupabaseAuthService: AuthService {
         try await manager.signOut()
     }
 }
-

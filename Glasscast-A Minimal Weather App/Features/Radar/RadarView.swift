@@ -335,7 +335,7 @@ struct RadarView: View {
                     )
                 )
         )
-         .glassEffect()
+        .glassEffect()
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
@@ -821,7 +821,7 @@ private struct RadarViewProxyMarkerPopup: View {
                     )
                 )
         )
-                .glassEffect()
+        .glassEffect()
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)
         .frame(maxWidth: 260)
     }
