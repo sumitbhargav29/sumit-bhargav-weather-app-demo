@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import CoreLocation
 
 struct SearchCityView: View {
     
@@ -136,7 +137,15 @@ struct SearchCityView: View {
                     ForEach(favorites.favorites) { fav in
                         Button {
                             HapticFeedback.light()
-                            selectedCity.set(city: fav.city)
+                            // Use any preloaded favorite weather for instant feel
+                            let cached = viewModel.favoriteWeather[fav.id]
+                            let coord: CLLocationCoordinate2D? = {
+                                if let lat = fav.lat, let lon = fav.lon {
+                                    return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                                }
+                                return nil
+                            }()
+                            selectedCity.set(city: fav.city, coordinate: coord, cachedWeather: cached)
                             selectedTab = 0
                         } label: {
                             FavoriteCityRow(
@@ -207,7 +216,11 @@ struct SearchCityView: View {
                         ForEach(viewModel.results) { city in
                             Button {
                                 HapticFeedback.light()
-                                selectedCity.set(city: city.name)
+                                // Pull any cached preview weather if available
+                                let cached = viewModel.weatherCache[city.id]
+                                selectedCity.set(city: city.name,
+                                                 coordinate: CLLocationCoordinate2D(latitude: city.lat, longitude: city.lon),
+                                                 cachedWeather: cached)
                                 selectedTab = 0
                             } label: {
                                 SearchResultRow(

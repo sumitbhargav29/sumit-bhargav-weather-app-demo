@@ -83,11 +83,20 @@ struct HomeView: View {
             }
         }
         .task {
-            // If Search tab already picked a city, skip the initial load here to avoid double refresh.
             if let picked = selectedCity.city, !picked.isEmpty {
                 await MainActor.run { model.city = picked }
-                // Fire-and-forget refresh so we don't block the transition.
-                Task { await model.refresh() }
+                // Seed instant UI from any cached preview, then refresh in background.
+                if let seed = selectedCity.cachedWeather {
+                    await MainActor.run {
+                        model.current = seed
+                        // Clear once consumed to avoid stale reuse
+                        selectedCity.cachedWeather = nil
+                    }
+                    // Fire-and-forget refresh to reconcile and fetch forecast
+                    Task { await model.refresh() }
+                } else {
+                    Task { await model.refresh() }
+                }
             } else {
                 await model.load()
             }
@@ -99,15 +108,20 @@ struct HomeView: View {
             guard let coord = locator.coordinate else { return }
             await updateCityFromCoordinate(coord)
         }
-        // Observe selection coming from Search tab
         .onChange(of: selectedCity.city) { _, newValue in
             guard let city = newValue, !city.isEmpty else { return }
             Task {
                 model.cancelRefresh()
                 let old = model.city
-                await MainActor.run { model.city = city }
+                await MainActor.run {
+                    model.city = city
+                    // Apply cached preview instantly if present
+                    if let seed = selectedCity.cachedWeather {
+                        model.current = seed
+                        selectedCity.cachedWeather = nil
+                    }
+                }
                 if old.caseInsensitiveCompare(city) != .orderedSame {
-                    // Fire-and-forget to avoid tying UI transition to the await chain.
                     Task { await model.refresh() }
                 }
             }
@@ -116,7 +130,6 @@ struct HomeView: View {
     }
     
     private func updateCityFromCoordinate(_ coord: CLLocationCoordinate2D) async {
-        // If a city has been explicitly selected from Search, prefer that and skip location override
         if let explicit = selectedCity.city, !explicit.isEmpty {
             return
         }
