@@ -24,14 +24,28 @@ enum AppConstants {
     }
     
     enum Supabase {
-        static let projectURLString = "https://gkhjjokrsiuyqcmpjcmw.supabase.co"
-        static let projectURL = URL(string: projectURLString)!
-        static let restBaseURLString = "\(projectURLString)/rest/v1"
-        static let restBaseURL = URL(string: restBaseURLString)!
+        
+        private static func value(for key: String) -> String {
+            guard let value = Bundle.main.infoDictionary?[key] as? String else {
+                fatalError("Missing \(key) in Info.plist")
+            }
+            return value
+        }
+        
+        static var projectURL: URL {
+            URL(string: value(for: "SUPABASE_PROJECT_URL"))!
+        }
+        
+        static let anonKey: String =
+        value(for: "SUPABASE_ANON_KEY")
+        
+        static var restBaseURL: URL {
+            projectURL.appendingPathComponent("rest/v1")
+        }
+        
         static let authTokenPath = "auth/v1/token"
         static let grantTypeKey = "grant_type"
         static let grantTypePassword = "password"
-        static let anonKey = "sb_publishable_kpJ_2UmkDA8QwugO5JTApQ_2GVu-L-0"
         static let headerAPIKey = "apikey"
         static let headerAuthorization = "Authorization"
         static let headerContentType = "Content-Type"
@@ -54,7 +68,21 @@ enum AppConstants {
     }
     
     enum WeatherAPI {
-        static let baseURL = "https://api.weatherapi.com/v1"
+        
+        private static func value(for key: String) -> String {
+            guard let value = Bundle.main.infoDictionary?[key] as? String else {
+                fatalError("Missing \(key) in Info.plist")
+            }
+            return value
+        }
+        
+        static var weatherBaseURL: URL {
+            URL(string: value(for: "WEATHER_API_URL"))!
+        }
+        
+        static let weatherKey: String =
+        value(for: "WEATHER_API_KEY")
+        
         static let currentPath = "current.json"
         static let forecastPath = "forecast.json"
         static let searchPath = "search.json"
@@ -68,7 +96,6 @@ enum AppConstants {
         static let alertsNo = "no"
         static let headerAccept = "Accept"
         static let contentTypeJSON = "application/json"
-        static let defaultAPIKey = "e576ecaf37344b5da74135851262201"
         static let errorDomain = "WeatherAPIService"
         static let unknown = "Unknown"
     }

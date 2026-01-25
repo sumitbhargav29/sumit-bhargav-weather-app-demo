@@ -54,10 +54,10 @@ final class SupabaseManager: ObservableObject {
             for await (event, session) in client.auth.authStateChanges {
                 // Log event + user info
                 if let s = session {
-                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue)")
-                    Self.logSession(prefix: "Auth Event \(event.rawValue)", session: s)
+//                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue)")
+//                    Self.logSession(prefix: "Auth Event \(event.rawValue)", session: s)
                 } else {
-                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue), session=nil")
+//                    print("\(AppConstants.Supabase.logPrefix) authStateChanges event=\(event.rawValue), session=nil")
                 }
                 
                 await MainActor.run {
@@ -66,22 +66,22 @@ final class SupabaseManager: ObservableObject {
                 }
                 
                 // Summarize current auth flags
-                print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(self.isAuthenticated), currentUserID=\(self.currentUserID?.uuidString ?? "nil")")
+//                print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(self.isAuthenticated), currentUserID=\(self.currentUserID?.uuidString ?? "nil")")
             }
         }
         
         // Try to load any existing session immediately
         Task {
-            print("\(AppConstants.Supabase.logPrefix) Checking initial session…")
+//            print("\(AppConstants.Supabase.logPrefix) Checking initial session…")
             if let session = try? await client.auth.session {
-                Self.logSession(prefix: "Initial session", session: session)
+//                Self.logSession(prefix: "Initial session", session: session)
                 await MainActor.run {
                     self.currentUserID = session.user.id
                     self.isAuthenticated = !session.isExpired
                 }
-                print("\(AppConstants.Supabase.logPrefix) Initial isAuthenticated=\(self.isAuthenticated)")
+//                print("\(AppConstants.Supabase.logPrefix) Initial isAuthenticated=\(self.isAuthenticated)")
             } else {
-                print("\(AppConstants.Supabase.logPrefix) Initial session: none")
+//                print("\(AppConstants.Supabase.logPrefix) Initial session: none")
                 await MainActor.run {
                     self.currentUserID = nil
                     self.isAuthenticated = false
@@ -102,14 +102,14 @@ final class SupabaseManager: ObservableObject {
     
     // Convenience sign-in / sign-out wrappers (call these from Login/Settings screens)
     func signIn(email: String, password: String) async throws {
-        print("\(AppConstants.Supabase.logPrefix) signIn started for email=\(email)")
+//        print("\(AppConstants.Supabase.logPrefix) signIn started for email=\(email)")
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             Self.logSession(prefix: "Sign in response", session: session)
-            print("\(AppConstants.Supabase.logPrefix) signIn success. isExpired=\(session.isExpired)")
+//            print("\(AppConstants.Supabase.logPrefix) signIn success. isExpired=\(session.isExpired)")
         } catch {
             let ns = error as NSError
-            print("\(AppConstants.Supabase.logPrefix) signIn failed: \(error.localizedDescription) domain=\(ns.domain) code=\(ns.code) userInfo=\(ns.userInfo)")
+//            print("\(AppConstants.Supabase.logPrefix) signIn failed: \(error.localizedDescription) domain=\(ns.domain) code=\(ns.code) userInfo=\(ns.userInfo)")
             throw error
         }
         // authStateChanges will update currentUserID/isAuthenticated
@@ -117,14 +117,14 @@ final class SupabaseManager: ObservableObject {
     
     // Fallback sign-in: use REST password grant, then set session into SDK.
     func signInFallback(email: String, password: String) async throws {
-        print("\(AppConstants.Supabase.logPrefix) signInFallback started for email=\(email)")
+//        print("\(AppConstants.Supabase.logPrefix) signInFallback started for email=\(email)")
         let (accessToken, refreshToken) = try await fetchTokensViaREST(email: email, password: password)
         do {
             try await client.auth.setSession(accessToken: accessToken, refreshToken: refreshToken)
-            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession succeeded")
+//            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession succeeded")
             // authStateChanges will update currentUserID/isAuthenticated
         } catch {
-            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession failed: \(error.localizedDescription)")
+//            print("\(AppConstants.Supabase.logPrefix) signInFallback setSession failed: \(error.localizedDescription)")
             throw error
         }
     }
@@ -178,12 +178,12 @@ final class SupabaseManager: ObservableObject {
     }
     
     func signOut() async throws {
-        print("\(AppConstants.Supabase.logPrefix) signOut started")
+//        print("\(AppConstants.Supabase.logPrefix) signOut started")
         do {
             try await client.auth.signOut()
-            print("\(AppConstants.Supabase.logPrefix) Signed out successfully.")
+//            print("\(AppConstants.Supabase.logPrefix) Signed out successfully.")
         } catch {
-            print("\(AppConstants.Supabase.logPrefix) signOut failed: \(error.localizedDescription)")
+//            print("\(AppConstants.Supabase.logPrefix) signOut failed: \(error.localizedDescription)")
             throw error
         }
         // authStateChanges will update currentUserID/isAuthenticated
@@ -228,9 +228,9 @@ final class SupabaseManager: ObservableObject {
             do {
                 if let session = try? await client.auth.session {
                     Self.logSession(prefix: "Current session", session: session)
-                    print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(!session.isExpired)")
+//                    print("\(AppConstants.Supabase.logPrefix) isAuthenticated=\(!session.isExpired)")
                 } else {
-                    print("\(AppConstants.Supabase.logPrefix) No current session. isAuthenticated=false")
+//                    print("\(AppConstants.Supabase.logPrefix) No current session. isAuthenticated=false")
                 }
             }
         }

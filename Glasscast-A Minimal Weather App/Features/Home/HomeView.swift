@@ -81,15 +81,16 @@ struct HomeView: View {
                     await model.refresh()
                 }
             }
-            
-            if case .loading = model.loadingState {
-                ProgressView()
-                    .tint(.cyan)
-                    .scaleEffect(1.2)
-            }
         }
         .task {
-            await model.load()
+            // If Search tab already picked a city, skip the initial load here to avoid double refresh.
+            if let picked = selectedCity.city, !picked.isEmpty {
+                await MainActor.run { model.city = picked }
+                // Fire-and-forget refresh so we don't block the transition.
+                Task { await model.refresh() }
+            } else {
+                await model.load()
+            }
         }
         .onAppear {
             locator.requestWhenInUse()
@@ -102,12 +103,12 @@ struct HomeView: View {
         .onChange(of: selectedCity.city) { _, newValue in
             guard let city = newValue, !city.isEmpty else { return }
             Task {
-                // Cancel any in-flight refresh, set new city, and refresh immediately.
                 model.cancelRefresh()
                 let old = model.city
                 await MainActor.run { model.city = city }
                 if old.caseInsensitiveCompare(city) != .orderedSame {
-                    await model.refresh()
+                    // Fire-and-forget to avoid tying UI transition to the await chain.
+                    Task { await model.refresh() }
                 }
             }
         }

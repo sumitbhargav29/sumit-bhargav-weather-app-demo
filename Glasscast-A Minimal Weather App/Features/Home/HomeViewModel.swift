@@ -46,17 +46,17 @@ final class HomeViewModel: ObservableObject {
     init(service: WeatherService = MockWeatherService()) {
         self.service = service
         if loggingEnabled {
-            print("[HomeVM] init(service: \(type(of: service)))")
+//            print("[HomeVM] init(service: \(type(of: service)))")
         }
     }
 
     func load() async {
         if loggingEnabled {
-            print("[HomeVM] load() begin for city=\(city)")
+//            print("[HomeVM] load() begin for city=\(city)")
         }
         await refresh()
         if loggingEnabled {
-            print("[HomeVM] load() end")
+//            print("[HomeVM] load() end")
         }
     }
 
@@ -66,7 +66,7 @@ final class HomeViewModel: ObservableObject {
         currentRefreshTask = nil
         setIdle()
         if loggingEnabled {
-            print("[HomeVM] cancelRefresh()")
+//            print("[HomeVM] cancelRefresh()")
         }
     }
 
@@ -79,7 +79,7 @@ final class HomeViewModel: ObservableObject {
         refreshTaskID = taskID
 
         if loggingEnabled {
-            print("[HomeVM] refresh() begin id=\(taskID) city=\(city)")
+//            print("[HomeVM] refresh() begin id=\(taskID) city=\(city)")
         }
         setLoading(true)
 
@@ -89,7 +89,7 @@ final class HomeViewModel: ObservableObject {
             do {
                 let start = Date()
                 if loggingEnabled {
-                    print("[HomeVM] -> fetching current + 5-day forecast (real)")
+//                    print("[HomeVM] -> fetching current + 5-day forecast (real)")
                 }
 
                 async let c = service.fetchCurrentWeather(for: city)
@@ -101,16 +101,16 @@ final class HomeViewModel: ObservableObject {
 
                 let elapsed = Date().timeIntervalSince(start)
                 if loggingEnabled {
-                    print("[HomeVM] <- fetched in \(String(format: "%.2f", elapsed))s")
-                    print("[HomeVM] current: city=\(current.city) temp=\(current.temperature)F cond=\(current.condition) hi=\(current.high) lo=\(current.low) symbol=\(current.symbolName) uv=\(current.uvIndex)")
+//                    print("[HomeVM] <- fetched in \(String(format: "%.2f", elapsed))s")
+//                    print("[HomeVM] current: city=\(current.city) temp=\(current.temperature)F cond=\(current.condition) hi=\(current.high) lo=\(current.low) symbol=\(current.symbolName) uv=\(current.uvIndex)")
                     let summary = forecast.map { "\($0.weekday): H\($0.high)L\($0.low)" }.joined(separator: ", ")
-                    print("[HomeVM] forecast(5): \(summary)")
+//                    print("[HomeVM] forecast(5): \(summary)")
                 }
 
                 // Only apply results if this is still the latest refresh
                 guard taskID == self.refreshTaskID else {
                     if loggingEnabled {
-                        print("[HomeVM] refresh() discard results; newer task exists id=\(self.refreshTaskID)")
+//                        print("[HomeVM] refresh() discard results; newer task exists id=\(self.refreshTaskID)")
                     }
                     return
                 }
@@ -119,25 +119,25 @@ final class HomeViewModel: ObservableObject {
                 self.forecast = forecast
                 self.setLoaded()
                 if loggingEnabled {
-                    print("[HomeVM] refresh() success id=\(taskID)")
+//                    print("[HomeVM] refresh() success id=\(taskID)")
                 }
             } catch is CancellationError {
                 // If this task was cancelled, just go idle quietly.
                 self.setIdle()
                 if loggingEnabled {
-                    print("[HomeVM] refresh() cancelled id=\(taskID)")
+//                    print("[HomeVM] refresh() cancelled id=\(taskID)")
                 }
             } catch {
                 // Only show error if this is still the latest refresh
                 guard taskID == self.refreshTaskID else {
                     if loggingEnabled {
-                        print("[HomeVM] refresh() error discarded; newer task exists id=\(self.refreshTaskID) err=\(error)")
+//                        print("[HomeVM] refresh() error discarded; newer task exists id=\(self.refreshTaskID) err=\(error)")
                     }
                     return
                 }
                 self.setFailed((error as NSError).localizedDescription)
                 if loggingEnabled {
-                    print("[HomeVM] refresh() failed: \(error.localizedDescription)")
+//                    print("[HomeVM] refresh() failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -154,7 +154,7 @@ final class HomeViewModel: ObservableObject {
         errorMessage = nil
         loadingState = loading ? .loading : .idle
         if loggingEnabled {
-            print("[HomeVM] state -> \(loading ? "loading" : "idle")")
+//            print("[HomeVM] state -> \(loading ? "loading" : "idle")")
         }
     }
 
@@ -163,7 +163,7 @@ final class HomeViewModel: ObservableObject {
         errorMessage = nil
         loadingState = .loaded
         if loggingEnabled {
-            print("[HomeVM] state -> loaded")
+//            print("[HomeVM] state -> loaded")
         }
     }
 
@@ -172,7 +172,7 @@ final class HomeViewModel: ObservableObject {
         errorMessage = message
         loadingState = .failed(message)
         if loggingEnabled {
-            print("[HomeVM] state -> failed '\(message)'")
+//            print("[HomeVM] state -> failed '\(message)'")
         }
     }
 
@@ -180,7 +180,7 @@ final class HomeViewModel: ObservableObject {
         isLoading = false
         loadingState = .idle
         if loggingEnabled {
-            print("[HomeVM] state -> idle")
+//            print("[HomeVM] state -> idle")
         }
     }
 }

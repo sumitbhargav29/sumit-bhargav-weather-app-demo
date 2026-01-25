@@ -50,7 +50,7 @@ final class FavoritesStore: ObservableObject {
         defer { isLoading = false }
         do {
             favorites = try await service.fetchFavorites(for: userID)
-            print("favorites data for radarview = \(favorites.count)",favorites.description)
+//            print("favorites data for radarview = \(favorites.count)",favorites.description)
         } catch {
             errorMessage = (error as NSError).localizedDescription
         }

@@ -33,7 +33,7 @@ final class AppContainer: ObservableObject {
         let resolvedAuthService = authService ?? SupabaseAuthService()
         let resolvedFavoritingService = favoritingService ?? SupabaseService()
         // Inject real WeatherAPI service by default. Replace key with your real key or load from config.
-        let defaultWeather = WeatherAPIService(apiKey: WeatherAPIService.defaultAPIKey)
+        let defaultWeather = WeatherAPIService(apiKey: AppConstants.WeatherAPI.weatherKey)
         
         let resolvedWeatherService = weatherService ?? defaultWeather
         let resolvedFavoritesStore = favoritesStore ?? FavoritesStore(service: resolvedFavoritingService, session: resolvedSession)

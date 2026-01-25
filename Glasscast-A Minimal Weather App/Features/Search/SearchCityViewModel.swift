@@ -43,7 +43,7 @@ final class SearchCityViewModel: ObservableObject {
     // MARK: - Init
     init(
         weatherService: WeatherService,
-        apiKey: String = WeatherAPIService.defaultAPIKey
+        apiKey: String = AppConstants.WeatherAPI.weatherKey
     ) {
         self.weatherService = weatherService
         self.apiKey = apiKey
@@ -51,7 +51,7 @@ final class SearchCityViewModel: ObservableObject {
     
     // Convenience init to match SearchCityView’s usage
     convenience init(container: AppContainer) {
-        self.init(weatherService: container.weatherService, apiKey: WeatherAPIService.defaultAPIKey)
+        self.init(weatherService: container.weatherService, apiKey: AppConstants.WeatherAPI.weatherKey)
     }
     
     // MARK: - Search debounce

@@ -14,13 +14,7 @@ struct WeatherAPIService: WeatherService, Sendable {
     init(apiKey: String, session: URLSession = .shared) {
         self.apiKey = apiKey
         self.session = session
-    }
-
-    // Exposed default API key for use across the app (replace/secure as needed)
-    static var defaultAPIKey: String {
-        // TODO: Move to a secure config (e.g., Info.plist or injected at launch)
-        return "e576ecaf37344b5da74135851262201"
-    }
+    } 
 
     // MARK: - WeatherService
 

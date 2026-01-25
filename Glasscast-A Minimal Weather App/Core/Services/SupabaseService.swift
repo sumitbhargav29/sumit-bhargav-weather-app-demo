@@ -97,7 +97,7 @@ final class SupabaseService: SupabaseFavoriting, @unchecked Sendable {
             ]
         )
         let authorized = await authorize(req)
-        logRequest(authorized, label: "FETCH favorites")
+//        logRequest(authorized, label: "FETCH favorites")
         do {
             let (data, resp) = try await urlSession.data(for: authorized)
             try SupabaseService.ensureOK(resp: resp, data: data, context: "FETCH favorites")
@@ -131,7 +131,7 @@ final class SupabaseService: SupabaseFavoriting, @unchecked Sendable {
             prefer: AppConstants.Supabase.preferReturnRepresentation
         )
         let authorized = await authorize(req)
-        logRequest(authorized, label: "ADD favorite", bodyPreview: payload)
+//        logRequest(authorized, label: "ADD favorite", bodyPreview: payload)
         do {
             let (data, resp) = try await urlSession.data(for: authorized)
             try SupabaseService.ensureOK(resp: resp, data: data, context: "ADD favorite")
@@ -161,7 +161,7 @@ final class SupabaseService: SupabaseFavoriting, @unchecked Sendable {
             prefer: AppConstants.Supabase.preferReturnMinimal
         )
         let authorized = await authorize(req)
-        logRequest(authorized, label: "REMOVE favorite")
+//        logRequest(authorized, label: "REMOVE favorite")
         do {
             let (data, resp) = try await urlSession.data(for: authorized)
             try SupabaseService.ensureOK(resp: resp, data: data, context: "REMOVE favorite")
@@ -181,7 +181,7 @@ final class SupabaseService: SupabaseFavoriting, @unchecked Sendable {
         guard let http = resp as? HTTPURLResponse else { return }
         if (200...299).contains(http.statusCode) { return }
         let body = String(data: data, encoding: .utf8) ?? ""
-        print("\(AppConstants.Supabase.serviceLogPrefix) \(context) \(AppConstants.Logging.error) status=\(http.statusCode) body=\(body)")
+//        print("\(AppConstants.Supabase.serviceLogPrefix) \(context) \(AppConstants.Logging.error) status=\(http.statusCode) body=\(body)")
         throw NSError(domain: "SupabaseService", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(http.statusCode): \(body)"])
     }
     
@@ -201,16 +201,16 @@ final class SupabaseService: SupabaseFavoriting, @unchecked Sendable {
     
     private func logResponse(_ resp: URLResponse, data: Data, label: String) {
         guard let http = resp as? HTTPURLResponse else {
-            print("\(AppConstants.Supabase.serviceLogPrefix) \(label) \(AppConstants.Logging.response) non-HTTP")
+//            print("\(AppConstants.Supabase.serviceLogPrefix) \(label) \(AppConstants.Logging.response) non-HTTP")
             return
         }
         let body = String(data: data, encoding: .utf8) ?? "<\(AppConstants.Logging.nonUTF8Body), \(data.count) bytes>"
-        print("\(AppConstants.Supabase.serviceLogPrefix) \(label) \(AppConstants.Logging.response) status=\(http.statusCode) body=\(body)")
+//        print("\(AppConstants.Supabase.serviceLogPrefix) \(label) \(AppConstants.Logging.response) status=\(http.statusCode) body=\(body)")
     }
     
     private func logError(_ error: Error, label: String) {
         let ns = error as NSError
-        print("\(AppConstants.Supabase.serviceLogPrefix) \(label): \(ns.domain) code=\(ns.code) message=\(ns.localizedDescription) userInfo=\(ns.userInfo)")
+//        print("\(AppConstants.Supabase.serviceLogPrefix) \(label): \(ns.domain) code=\(ns.code) message=\(ns.localizedDescription) userInfo=\(ns.userInfo)")
     }
 }
 

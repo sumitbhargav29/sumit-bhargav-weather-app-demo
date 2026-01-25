@@ -52,9 +52,22 @@
 		18FD17702F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Glasscast-A Minimal Weather AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1854720B2F267D82000EA26C /* Exceptions for "Glasscast-A Minimal Weather App" folder in "Glasscast-A Minimal Weather App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Glasscast-A-Minimal-Weather-App-Info.plist",
+			);
+			target = 18FD17582F1FE5B4006B2EF7 /* Glasscast-A Minimal Weather App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		18FD175B2F1FE5B4006B2EF7 /* Glasscast-A Minimal Weather App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1854720B2F267D82000EA26C /* Exceptions for "Glasscast-A Minimal Weather App" folder in "Glasscast-A Minimal Weather App" target */,
+			);
 			path = "Glasscast-A Minimal Weather App";
 			sourceTree = "<group>";
 		};
@@ -450,6 +463,8 @@
 				DEVELOPMENT_TEAM = TYXXJDPQ2N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Glasscast-A-Minimal-Weather-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.weather";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location helps us provide real-time weather updates for your area.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -466,6 +481,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPABASE_ANON_KEY = "sb_publishable_kpJ_2UmkDA8QwugO5JTApQ_2GVu-L-0";
+				SUPABASE_PROJECT_URL = "https://gkhjjokrsiuyqcmpjcmw.supabase.co";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -475,6 +492,8 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WEATHER_API_KEY = e576ecaf37344b5da74135851262201;
+				WEATHER_API_URL = "https://api.weatherapi.com/v1";
 			};
 			name = Debug;
 		};
@@ -490,6 +509,8 @@
 				DEVELOPMENT_TEAM = TYXXJDPQ2N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Glasscast-A-Minimal-Weather-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.weather";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location helps us provide real-time weather updates for your area.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -506,6 +527,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPABASE_ANON_KEY = "sb_publishable_kpJ_2UmkDA8QwugO5JTApQ_2GVu-L-0";
+				SUPABASE_PROJECT_URL = "https://gkhjjokrsiuyqcmpjcmw.supabase.co";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -515,6 +538,8 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WEATHER_API_KEY = e576ecaf37344b5da74135851262201;
+				WEATHER_API_URL = "https://api.weatherapi.com/v1";
 			};
 			name = Release;
 		};
