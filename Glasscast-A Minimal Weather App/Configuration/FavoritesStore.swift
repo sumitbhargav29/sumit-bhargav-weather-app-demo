@@ -113,4 +113,3 @@ final class FavoritesStore: ObservableObject {
         }
     }
 }
-
