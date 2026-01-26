@@ -9,8 +9,8 @@ import SwiftUI
 import Foundation
 
 struct PlaceholderView: View {
-    // Night theme pairs nicely with moon + stars, but we keep your theme wiring.
-    private let theme: WeatherTheme = .sunny
+    // Use a neutral theme so the background doesn't add sunny glow; dark/light comes from ColorSchemeManager.
+    private let theme: WeatherTheme = .foggy
     
     var body: some View {
         ZStack {
@@ -82,12 +82,12 @@ private struct AnimatedSkyScene: View {
                 .blendMode(.plusLighter)
                 .allowsHitTesting(false)
                 
-                // Denser star field: two layers (now much fewer + varied shapes/sizes)
-                DenseStars(countFactor: d, flicker: starFlicker, layerOpacity: 0.7, spread: 0.7)
+                // Denser star field: two layers (extended farther down)
+                DenseStars(countFactor: d, flicker: starFlicker, layerOpacity: 0.7, spread: 0.7, verticalCoverage: 0.95)
                     .blendMode(.plusLighter)
                     .opacity(0.9)
                     .allowsHitTesting(false)
-                DenseStars(countFactor: d, flicker: starFlicker, layerOpacity: 0.5, spread: 1.0)
+                DenseStars(countFactor: d, flicker: starFlicker, layerOpacity: 0.5, spread: 1.0, verticalCoverage: 1.0)
                     .blendMode(.plusLighter)
                     .opacity(0.6)
                     .allowsHitTesting(false)
@@ -97,18 +97,18 @@ private struct AnimatedSkyScene: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .offset(x: -w * 0.14 + moonDrift, y: h * 0.08)
                 
-                // Moonlight glow from bottom (stronger)
-                MoonlightGlow(intensity: 1.0)
+                // Moonlight glow from bottom (slightly reduced intensity)
+                MoonlightGlow(intensity: 0.8)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .offset(y: h * 0.02)
                     .allowsHitTesting(false)
                 
-                // Three clouds: 1 big center, 2 small sides, two bands for parallax
-                ThreeClouds(scale: 1.0, opacity: 0.88)
+                // Two clouds: 1 big center, 1 small side, two bands for parallax
+                TwoClouds(scale: 1.0, opacity: 0.88)
                     .offset(x: cloudDrift1 * w, y: -h * 0.16)
                     .frame(height: d * 0.28)
                 
-                ThreeClouds(scale: 0.9, opacity: 0.68)
+                TwoClouds(scale: 0.9, opacity: 0.68)
                     .offset(x: cloudDrift2 * w, y: -h * 0.06)
                     .frame(height: d * 0.30)
                 
@@ -229,6 +229,8 @@ private struct DenseStars: View {
     let flicker: CGFloat
     let layerOpacity: Double
     let spread: CGFloat
+    // New: how much of the height stars can occupy (0...1)
+    var verticalCoverage: CGFloat = 0.55
     
     var body: some View {
         TimelineView(.animation) { _ in
@@ -248,11 +250,11 @@ private struct DenseStars: View {
                 }
                 
                 for i in 0..<baseCount {
-                    // Position (top 55% of height)
+                    // Position (allow configurable vertical coverage)
                     let fx = rand(i &* 73, 997)
                     let fy = rand(i &* 191, 983)
                     let x = CGFloat(fx) * size.width
-                    let y = CGFloat(fy) * size.height * 0.55
+                    let y = CGFloat(fy) * size.height * max(0.0, min(1.0, verticalCoverage))
                     
                     // Size tier: many small, some medium, a few large
                     let sizePick = rand(i &* 29, 1000)
@@ -314,8 +316,8 @@ private struct DenseStars: View {
     }
 }
 
-// Three clouds side-by-side: 1 big center, 2 small sides
-private struct ThreeClouds: View {
+// Two clouds side-by-side: 1 big center, 1 small side
+private struct TwoClouds: View {
     var scale: CGFloat = 1.0
     var opacity: Double = 0.85
     
@@ -332,8 +334,7 @@ private struct ThreeClouds: View {
                     .offset(y: base * 0.02)
                 cloudEmoji(size: base * 0.80 * scale, opacity: opacity) // big center
                     .offset(y: -base * 0.02)
-                cloudEmoji(size: base * 0.55 * scale, opacity: opacity * 0.82)
-                    .offset(y: base * 0.015)
+                // Removed third cloud
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
