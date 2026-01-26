@@ -24,6 +24,11 @@ struct LoginView: View {
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .coldSnowy
     
+    // Adaptive foreground color helper (mirrors HomeView)
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
+    
     init(container: AppContainer? = nil) {
         let resolved = container ?? AppContainer()
         _viewModel = StateObject(wrappedValue: LoginViewModel(container: resolved))
@@ -55,7 +60,7 @@ struct LoginView: View {
                         }
                         .hidden()
                         
-                        // Header (kept identical)
+                        // Header (kept identical except adaptive text colors)
                         VStack(spacing: 10) {
                             Circle()
                                 .fill(.ultraThinMaterial)
@@ -73,12 +78,12 @@ struct LoginView: View {
                             
                             Text(AppConstants.UI.loginTitle)
                                 .font(.system(.title2, design: .rounded).weight(.bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                                 .shadow(color: .black.opacity(0.35), radius: 10)
                             
                             Text(AppConstants.UI.loginSubtitle)
                                 .font(.caption2.weight(.light))
-                                .foregroundColor(.white.opacity(0.65))
+                                .foregroundColor(adaptiveForeground(opacity: 0.65))
                                 .tracking(1.1)
                         }
                         
@@ -87,27 +92,27 @@ struct LoginView: View {
                             
                             Text(AppConstants.UI.loginWelcomeBack)
                                 .font(.headline.bold())
-                                .foregroundColor(.white)
+                                .foregroundColor(adaptiveForeground())
                             
                             Text(AppConstants.UI.loginSecurelySignIn)
                                 .font(.footnote)
-                                .foregroundColor(.white.opacity(0.65))
+                                .foregroundColor(adaptiveForeground(opacity: 0.65))
                             
                             // Email
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(AppConstants.UI.emailTitle)
                                     .font(.caption.weight(.semibold))
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(adaptiveForeground(opacity: 0.7))
                                 
                                 HStack(spacing: 10) {
                                     Image(systemName: AppConstants.Symbols.envelopeFill)
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(adaptiveForeground(opacity: 0.6))
                                     
                                     TextField(AppConstants.UI.emailPlaceholder, text: $viewModel.email)
                                         .textInputAutocapitalization(.never)
                                         .keyboardType(.emailAddress)
                                         .disableAutocorrection(true)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(adaptiveForeground())
                                         .tint(.cyan)
                                         .focused($focusedField, equals: .email)
                                         .submitLabel(.next)
@@ -124,7 +129,7 @@ struct LoginView: View {
                                 HStack {
                                     Text(AppConstants.UI.passwordTitle)
                                         .font(.caption.weight(.semibold))
-                                        .foregroundColor(.white.opacity(0.7))
+                                        .foregroundColor(adaptiveForeground(opacity: 0.7))
                                     
                                     Spacer()
                                     
@@ -140,11 +145,11 @@ struct LoginView: View {
                                 
                                 HStack(spacing: 10) {
                                     Image(systemName: AppConstants.Symbols.lockFill)
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(adaptiveForeground(opacity: 0.6))
                                     
                                     if viewModel.showPassword {
                                         TextField(AppConstants.UI.yourPassword, text: $viewModel.password)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(adaptiveForeground())
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
                                             .submitLabel(.go)
@@ -153,7 +158,7 @@ struct LoginView: View {
                                             }
                                     } else {
                                         SecureField(AppConstants.UI.yourPassword, text: $viewModel.password)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(adaptiveForeground())
                                             .tint(.cyan)
                                             .focused($focusedField, equals: .password)
                                             .submitLabel(.go)
@@ -168,7 +173,7 @@ struct LoginView: View {
                                         }
                                     } label: {
                                         Image(systemName: viewModel.showPassword ? AppConstants.Symbols.eyeSlashFill : AppConstants.Symbols.eyeFillAlt)
-                                            .foregroundColor(.white.opacity(0.75))
+                                            .foregroundColor(adaptiveForeground(opacity: 0.75))
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -212,7 +217,7 @@ struct LoginView: View {
                             // Navigate to Signup
                             HStack(spacing: 6) {
                                 Text(AppConstants.UI.dontHaveAccount)
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(adaptiveForeground(opacity: 0.7))
                                 NavigationLink {
                                     SignupView()
                                 } label: {
@@ -236,7 +241,7 @@ struct LoginView: View {
                             //                                    Text(AppConstants.UI.debugSignInProbe)
                             //                                }
                             //                                .font(.footnote.bold())
-                            //                                .foregroundColor(.white)
+                            //                                .foregroundColor(adaptiveForeground())
                             //                                .padding(.vertical, 10)
                             //                                .frame(maxWidth: .infinity)
                             //                                .background(Color.orange.opacity(0.25))
@@ -256,7 +261,7 @@ struct LoginView: View {
                             Text(AppConstants.UI.secureBySupabase)
                                 .font(.caption.weight(.semibold))
                         }
-                        .foregroundColor(.white.opacity(0.55))
+                        .foregroundColor(adaptiveForeground(opacity: 0.55))
                         
                         Spacer(minLength: 16)
                     }
@@ -290,4 +295,3 @@ struct LoginView: View {
         LoginView()
     }
 }
-

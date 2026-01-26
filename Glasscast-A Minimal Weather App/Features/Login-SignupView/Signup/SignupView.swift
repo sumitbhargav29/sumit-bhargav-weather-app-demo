@@ -19,6 +19,11 @@ struct SignupView: View {
     // Pick the theme for this screen
     private let screenTheme: WeatherTheme = .hotHumid
     
+    // Adaptive foreground color helper (match HomeView/LoginView)
+    private func adaptiveForeground(opacity: Double = 1.0) -> Color {
+        ColorSchemeManager.shared.adaptiveForegroundColor(opacity: opacity)
+    }
+    
     init(container: AppContainer? = nil) {
         let resolved = container ?? AppContainer()
         _viewModel = StateObject(wrappedValue: SignupViewModel(container: resolved))
@@ -89,12 +94,12 @@ struct SignupView: View {
             
             Text(AppConstants.UI.signupTitle)
                 .font(.system(.title2, design: .rounded).weight(.bold))
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
                 .shadow(color: .black.opacity(0.35), radius: 10)
             
             Text(AppConstants.UI.signupSubtitle)
                 .font(.caption2.weight(.light))
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(adaptiveForeground(opacity: 0.65))
                 .tracking(1.1)
         }
     }
@@ -103,11 +108,11 @@ struct SignupView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(AppConstants.UI.signupJoin)
                 .font(.headline.bold())
-                .foregroundColor(.white)
+                .foregroundColor(adaptiveForeground())
             
             Text(AppConstants.UI.signupDesc)
                 .font(.footnote)
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(adaptiveForeground(opacity: 0.65))
             
             LabeledIconTextField(
                 title: AppConstants.UI.fullNameTitle,
@@ -159,7 +164,7 @@ struct SignupView: View {
             // Link back to Sign In
             HStack(spacing: 6) {
                 Text(AppConstants.UI.alreadyHaveAccount)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(adaptiveForeground(opacity: 0.7))
                 NavigationLink {
                     LoginView()
                         .navigationBarBackButtonHidden(true)
@@ -182,7 +187,7 @@ struct SignupView: View {
             Text(AppConstants.UI.secureBySupabase)
                 .font(.caption.weight(.semibold))
         }
-        .foregroundColor(.white.opacity(0.55))
+        .foregroundColor(adaptiveForeground(opacity: 0.55))
     }
 }
 
@@ -191,4 +196,3 @@ struct SignupView: View {
         SignupView()
     }
 }
-

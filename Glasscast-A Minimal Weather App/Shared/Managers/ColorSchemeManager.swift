@@ -16,13 +16,13 @@ class ColorSchemeManager: ObservableObject {
     private let skyTextPrimary = Color(red: 0.12, green: 0.22, blue: 0.32)
     private let skyTextSecondary = Color(red: 0.32, green: 0.42, blue: 0.52)
     
-    
-    @AppStorage(AppConstants.StorageKeys.appColorScheme) var storedScheme: String = "system" {
+    // Default to dark so app launches in dark mode on first run.
+    // User changes in SettingsView persist via @AppStorage.
+    @AppStorage(AppConstants.StorageKeys.appColorScheme) var storedScheme: String = "dark" {
         didSet {
             objectWillChange.send()
         }
     }
-    
     
     var colorScheme: ColorScheme? {
         switch storedScheme {
@@ -77,7 +77,6 @@ extension ColorSchemeManager {
         }
     }
     
-    
     /// Static helper to get adaptive foreground color from shared instance
     static func adaptiveForegroundColor(
         opacity: Double = 1.0,
@@ -88,7 +87,6 @@ extension ColorSchemeManager {
             isSecondary: isSecondary
         )
     }
-    
 }
 
 extension View {
@@ -105,4 +103,3 @@ extension View {
         )
     }
 }
-

@@ -19,17 +19,17 @@ struct LabeledIconTextField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.7))
             
             HStack {
                 Image(systemName: systemImage)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.6))
                 
                 TextField(placeholder, text: $text)
                     .textInputAutocapitalization(autocapitalization)
                     .keyboardType(keyboard)
                     .disableAutocorrection(true)
-                    .foregroundColor(.white)
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 1.0))
                     .tint(.cyan)
             }
             .padding(12)
@@ -48,14 +48,14 @@ struct LabeledIconSecureField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.7))
             
             HStack {
                 Image(systemName: systemImage)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.6))
                 
                 SecureField(placeholder, text: $text)
-                    .foregroundColor(.white)
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 1.0))
                     .tint(.cyan)
             }
             .padding(12)
@@ -71,12 +71,12 @@ struct TermsToggleRow: View {
         Toggle(isOn: $isOn) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(AppConstants.UI.termsPrefix)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.8))
                 Text(AppConstants.UI.terms)
                     .foregroundColor(.cyan)
                     .bold()
                 Text(AppConstants.UI.and)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(ColorSchemeManager.shared.adaptiveForegroundColor(opacity: 0.8))
                 Text(AppConstants.UI.privacyPolicy)
                     .foregroundColor(.cyan)
                     .bold()
@@ -131,7 +131,7 @@ struct AuthPrimaryButton: View {
                     }
                 }
             }
-            .foregroundColor(.white)
+            .foregroundColor(.white) // Keep white for contrast against cyan/blue gradient
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(
@@ -151,4 +151,3 @@ struct AuthPrimaryButton: View {
         .opacity((isEnabled && !isLoading) ? 1.0 : 0.5)
     }
 }
-
