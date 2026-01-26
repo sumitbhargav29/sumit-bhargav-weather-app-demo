@@ -46,6 +46,7 @@ struct PlaceholderView: View {
             .padding(.horizontal, 24)
         }
         .navigationBarBackButtonHidden(true)
+        .preferredColorScheme(.dark) // Force dark mode for this view only
     }
 }
 
