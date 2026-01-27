@@ -24,6 +24,10 @@ struct SearchCityView: View {
     
     private let theme: WeatherTheme = .sunny
     
+    // MARK: - Local state
+    @State private var pendingRemoval: FavoriteCity?
+    @State private var showRemoveConfirm: Bool = false
+    
     // MARK: - Init
     init(selectedTab: Binding<Int>, container: AppContainer? = nil) {
         _selectedTab = selectedTab
@@ -46,7 +50,13 @@ struct SearchCityView: View {
                     VStack(spacing: 22) {
                         topBar
                         searchField
-                        favoritesSection
+                        
+                        // Show favorites only when not actively searching
+                        if !(isSearchFocused && !viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
+                            favoritesSection
+                        }
+                        
+                        // Show results only when focused and query not empty
                         resultsSection
                         
                         if let error = favorites.errorMessage {
@@ -59,6 +69,11 @@ struct SearchCityView: View {
                     .padding(.top, max(24, safeTop + 8))
                     .padding(.bottom, max(24, safeBottom + 8))
                     .frame(maxWidth: 700)
+                }
+                // Tap outside to dismiss keyboard and restore favorites
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissSearchAndRestore()
                 }
             }
         }
@@ -74,7 +89,29 @@ struct SearchCityView: View {
         } message: {
             Text(AppConstants.UI.clearAllAlertMessage)
         }
+        .alert(
+            pendingRemovalAlertTitle,
+            isPresented: $showRemoveConfirm,
+            presenting: pendingRemoval
+        ) { fav in
+            Button(AppConstants.UI.cancel, role: .cancel) {
+                pendingRemoval = nil
+            }
+            Button(AppConstants.UI.clearAllDestructiveLabel, role: .destructive) {
+                HapticFeedback.medium()
+                let city = fav.city
+                let country = fav.country
+                Task { await favorites.toggle(city: city, country: country) }
+                pendingRemoval = nil
+            }
+        } message: { fav in
+            Text("Remove \(fav.city), \(fav.country) from favorites?")
+        }
         .navigationBarBackButtonHidden(true)
+    }
+    
+    private var pendingRemovalAlertTitle: String {
+        "Remove Favorite"
     }
     
     // MARK: - Top Bar
@@ -104,12 +141,16 @@ struct SearchCityView: View {
                 .disableAutocorrection(true)
                 .onSubmit {
                     Task { await viewModel.search() }
+                    // Hide keyboard and restore favorites; also clear query to reset state.
+                    dismissSearchAndRestore(clearQuery: true)
                 }
             
             if !viewModel.query.isEmpty {
                 Button {
                     HapticFeedback.selection()
                     viewModel.clearSearch()
+                    // Also dismiss focus so favorites show again
+                    isSearchFocused = false
                 } label: {
                     Image(systemName: AppConstants.Symbols.closeCircleFill)
                 }
@@ -153,13 +194,9 @@ struct SearchCityView: View {
                                 weather: viewModel.favoriteWeather[fav.id],
                                 isLoading: viewModel.loadingFavorites.contains(fav.id),
                                 onDelete: {
-                                    HapticFeedback.medium()
-                                    Task {
-                                        await favorites.toggle(
-                                            city: fav.city,
-                                            country: fav.country
-                                        )
-                                    }
+                                    HapticFeedback.warning()
+                                    pendingRemoval = fav
+                                    showRemoveConfirm = true
                                 }
                             )
                         }
@@ -255,7 +292,7 @@ struct SearchCityView: View {
     // MARK: - Results Section
     private var resultsSection: some View {
         Group {
-            if isSearchFocused && !viewModel.results.isEmpty {
+            if isSearchFocused && !viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !viewModel.results.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(AppConstants.UI.searchResultsHeader)
                         .font(.caption.weight(.semibold))
@@ -271,6 +308,8 @@ struct SearchCityView: View {
                                 selectedCity.set(city: city.name,
                                                  coordinate: CLLocationCoordinate2D(latitude: city.lat, longitude: city.lon),
                                                  cachedWeather: cached)
+                                // Dismiss keyboard and restore favorites
+                                dismissSearchAndRestore(clearQuery: true)
                                 selectedTab = 0
                             } label: {
                                 SearchResultRow(
@@ -288,6 +327,8 @@ struct SearchCityView: View {
                                                 lon: city.lon
                                             )
                                         }
+                                        // After toggling favorite, dismiss search and show favorites again
+                                        dismissSearchAndRestore(clearQuery: false)
                                     }
                                 )
                             }
@@ -302,6 +343,17 @@ struct SearchCityView: View {
             }
         }
     }
+    
+    // MARK: - Helpers
+    private func dismissSearchAndRestore(clearQuery: Bool = true) {
+        isSearchFocused = false
+        if clearQuery {
+            viewModel.clearSearch()
+        } else {
+            // Keep the query but hide keyboard so favorites show (because isSearchFocused is false).
+            // No further action needed; UI conditions already hide results when not focused.
+        }
+    }
 }
 
 // MARK: - Local interactive button style (press scale)
@@ -311,6 +363,11 @@ private struct ScaleOnPressStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
             .animation(.spring(response: 0.25, dampingFraction: 0.8), value: configuration.isPressed)
     }
+}
+
+private extension AppConstants.UI {
+    // Provide a label for destructive single removal for clarity
+    static let clearAllDestructiveLabel = "Remove"
 }
 
 #Preview {
