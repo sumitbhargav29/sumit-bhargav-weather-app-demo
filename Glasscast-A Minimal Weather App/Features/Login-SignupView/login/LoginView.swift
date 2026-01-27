@@ -175,6 +175,7 @@ struct LoginView: View {
                                         Image(systemName: viewModel.showPassword ? AppConstants.Symbols.eyeSlashFill : AppConstants.Symbols.eyeFillAlt)
                                             .foregroundColor(adaptiveForeground(opacity: 0.75))
                                     }
+                                    .accessibilityIdentifier("login.togglePassword")
                                     .buttonStyle(.plain)
                                 }
                                 .padding(12)

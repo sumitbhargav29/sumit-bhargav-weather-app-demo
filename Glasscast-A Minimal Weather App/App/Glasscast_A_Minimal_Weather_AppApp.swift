@@ -9,19 +9,32 @@ import SwiftUI
 
 @main
 struct Glasscast_A_Minimal_Weather_AppApp: App {
-    // Create one shared container for the whole app
-    @StateObject private var container = AppContainer()
+    // Create one shared container for the whole app, optionally with UI-test mocks
+    @StateObject private var container: AppContainer
     @ObservedObject private var colorSchemeManager = ColorSchemeManager.shared
-    
-//    init() {
-//        print(
-//            Bundle.main.infoDictionary?["SUPABASE_PROJECT_URL"] ?? "MISSING",
-//            Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] ?? "MISSING",
-//            Bundle.main.infoDictionary?["WEATHER_API_URL"] ?? "MISSING",
-//            Bundle.main.infoDictionary?["WEATHER_API_KEY"] ?? "MISSING"
-//        )
-//    }
-    
+
+    init() {
+        // Detect UI test mode
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-UITests") {
+            // Use mocks for deterministic UI testing
+            // Use MockAuthService (always succeeds). Weather can stay real or be mocked if available.
+            let mockAuth = MockAuthService()
+            // If you have a MockWeatherService in your project, you can use it here.
+            // Otherwise, the default WeatherAPIService will be used.
+            let weatherService: WeatherService? = nil
+            _container = StateObject(wrappedValue: AppContainer(
+                session: AppSession(),
+                favoritesStore: nil,
+                weatherService: weatherService,
+                favoritingService: nil,
+                authService: mockAuth
+            ))
+        } else {
+            _container = StateObject(wrappedValue: AppContainer())
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -34,4 +47,3 @@ struct Glasscast_A_Minimal_Weather_AppApp: App {
         }
     }
 }
-
