@@ -85,6 +85,7 @@ struct RadarView: View {
                     )
                     .environmentObject(favoritesStore)
                     .environment(\.container, container)
+                    .accessibilityIdentifier("radar.map")
                     .task(id: locator.coordinate?.latitude) {
                         if let coord = locator.coordinate {
                             userCoordinate = coord

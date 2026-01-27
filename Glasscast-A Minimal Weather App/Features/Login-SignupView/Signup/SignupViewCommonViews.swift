@@ -83,6 +83,7 @@ struct TermsToggleRow: View {
             }
             .font(.footnote)
         }
+        .accessibilityIdentifier("signup.terms")
         .toggleStyle(.switch)
         .tint(.cyan)
     }

@@ -13,6 +13,12 @@
 		18578ABA2F21786E00D082A6 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 18578AB92F21786E00D082A6 /* PostgREST */; };
 		18578ABC2F21787800D082A6 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 18578ABB2F21787800D082A6 /* Supabase */; };
 		18578ABE2F21787D00D082A6 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 18578ABD2F21787D00D082A6 /* Storage */; };
+		1895E9AB2F27DD5000A36A91 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9AA2F27DD5000A36A91 /* PostgREST */; };
+		1895E9AF2F27DD5000A36A91 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9AE2F27DD5000A36A91 /* Storage */; };
+		1895E9B32F27DD5800A36A91 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9B22F27DD5800A36A91 /* PostgREST */; };
+		1895E9B72F27DD5800A36A91 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9B62F27DD5800A36A91 /* Storage */; };
+		1895E9B92F27DD5800A36A91 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9B82F27DD5800A36A91 /* Supabase */; };
+		1895E9BB2F27DD7400A36A91 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1895E9BA2F27DD7400A36A91 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,33 +58,10 @@
 		18FD17702F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Glasscast-A Minimal Weather AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1854720B2F267D82000EA26C /* Exceptions for "Glasscast-A Minimal Weather App" folder in "Glasscast-A Minimal Weather App" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Glasscast-A-Minimal-Weather-App-Info.plist",
-			);
-			target = 18FD17582F1FE5B4006B2EF7 /* Glasscast-A Minimal Weather App */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		18FD175B2F1FE5B4006B2EF7 /* Glasscast-A Minimal Weather App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1854720B2F267D82000EA26C /* Exceptions for "Glasscast-A Minimal Weather App" folder in "Glasscast-A Minimal Weather App" target */,
-			);
 			path = "Glasscast-A Minimal Weather App";
-			sourceTree = "<group>";
-		};
-		18FD17692F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Glasscast-A Minimal Weather AppTests";
-			sourceTree = "<group>";
-		};
-		18FD17732F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Glasscast-A Minimal Weather AppUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -99,7 +82,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1895E9BB2F27DD7400A36A91 /* Supabase in Frameworks */,
+				1895E9AB2F27DD5000A36A91 /* PostgREST in Frameworks */,
 				18578AB32F21775400D082A6 /* Auth in Frameworks */,
+				1895E9AF2F27DD5000A36A91 /* Storage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,7 +93,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1895E9B32F27DD5800A36A91 /* PostgREST in Frameworks */,
+				1895E9B92F27DD5800A36A91 /* Supabase in Frameworks */,
 				18578AB52F21776000D082A6 /* Auth in Frameworks */,
+				1895E9B72F27DD5800A36A91 /* Storage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,8 +115,6 @@
 			isa = PBXGroup;
 			children = (
 				18FD175B2F1FE5B4006B2EF7 /* Glasscast-A Minimal Weather App */,
-				18FD17692F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppTests */,
-				18FD17732F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests */,
 				18578AB82F21786E00D082A6 /* Frameworks */,
 				18FD175A2F1FE5B4006B2EF7 /* Products */,
 			);
@@ -186,12 +173,12 @@
 			dependencies = (
 				18FD17682F1FE5B6006B2EF7 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				18FD17692F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppTests */,
-			);
 			name = "Glasscast-A Minimal Weather AppTests";
 			packageProductDependencies = (
 				18578AB22F21775400D082A6 /* Auth */,
+				1895E9AA2F27DD5000A36A91 /* PostgREST */,
+				1895E9AE2F27DD5000A36A91 /* Storage */,
+				1895E9BA2F27DD7400A36A91 /* Supabase */,
 			);
 			productName = "Glasscast-A Minimal Weather AppTests";
 			productReference = 18FD17662F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppTests.xctest */;
@@ -210,12 +197,12 @@
 			dependencies = (
 				18FD17722F1FE5B6006B2EF7 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				18FD17732F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests */,
-			);
 			name = "Glasscast-A Minimal Weather AppUITests";
 			packageProductDependencies = (
 				18578AB42F21776000D082A6 /* Auth */,
+				1895E9B22F27DD5800A36A91 /* PostgREST */,
+				1895E9B62F27DD5800A36A91 /* Storage */,
+				1895E9B82F27DD5800A36A91 /* Supabase */,
 			);
 			productName = "Glasscast-A Minimal Weather AppUITests";
 			productReference = 18FD17702F1FE5B6006B2EF7 /* Glasscast-A Minimal Weather AppUITests.xctest */;
@@ -236,6 +223,7 @@
 					};
 					18FD17652F1FE5B6006B2EF7 = {
 						CreatedOnToolsVersion = 26.0;
+						LastSwiftMigration = 2600;
 						TestTargetID = 18FD17582F1FE5B4006B2EF7;
 					};
 					18FD176F2F1FE5B6006B2EF7 = {
@@ -547,6 +535,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TYXXJDPQ2N;
@@ -556,8 +545,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "SamInfotech.Glasscast-A-Minimal-Weather-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "Glasscast-A Minimal Weather AppTests/Glasscast-A Minimal Weather AppTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -569,6 +563,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TYXXJDPQ2N;
@@ -578,8 +573,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "SamInfotech.Glasscast-A-Minimal-Weather-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "Glasscast-A Minimal Weather AppTests/Glasscast-A Minimal Weather AppTests-Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -598,6 +597,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "SamInfotech.Glasscast-A-Minimal-Weather-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -618,6 +620,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "SamInfotech.Glasscast-A-Minimal-Weather-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -709,6 +714,36 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Storage;
+		};
+		1895E9AA2F27DD5000A36A91 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		1895E9AE2F27DD5000A36A91 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		1895E9B22F27DD5800A36A91 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		1895E9B62F27DD5800A36A91 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		1895E9B82F27DD5800A36A91 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+		1895E9BA2F27DD7400A36A91 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18FD17E42F2176B2006B2EF7 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

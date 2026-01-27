@@ -182,21 +182,71 @@ struct SearchCityView: View {
  
             Spacer()
             
-            if favorites.isLoading {
-                ProgressView()
-            } else {
-                Button(AppConstants.UI.sync) {
-                    HapticFeedback.medium()
-                    Task { await favorites.load() }
+            // SYNC button now always visible; shows inline spinner when loading
+            Button {
+                HapticFeedback.medium()
+                Task { await favorites.load() }
+            } label: {
+                HStack(spacing: 6) {
+                    if favorites.isLoading {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                            .tint(.white) // good in dark; gradient foreground covers light
+                    } else {
+                        Image(systemName: AppConstants.Symbols.arrowClockwiseCircleFill)
+                    }
+                    Text(AppConstants.UI.sync)
                 }
+                .font(.caption.weight(.bold))
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            LinearGradient(colors: [.cyan.opacity(0.35), .blue.opacity(0.25)],
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing)
+                                .clipShape(Capsule())
+                        )
+                        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                )
+                .foregroundStyle(LinearGradient(colors: [.cyan, .blue],
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing))
+                .contentShape(Capsule())
             }
+            .buttonStyle(ScaleOnPressStyle())
+            .disabled(favorites.isLoading) // avoid spamming; keeps UI same
             
             if !favorites.favorites.isEmpty {
                 Divider().frame(height: 12)
-                Button(AppConstants.UI.clearAll) {
+                // Enhanced CLEAR ALL button (visual only, same action)
+                Button {
                     HapticFeedback.warning()
                     viewModel.showClearAllConfirm = true
+                } label: {
+                    Label(AppConstants.UI.clearAll, systemImage: AppConstants.Symbols.trashFill)
+                        .font(.caption.weight(.bold))
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(
+                            Capsule()
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    LinearGradient(colors: [.pink.opacity(0.35), .red.opacity(0.28)],
+                                                   startPoint: .topLeading,
+                                                   endPoint: .bottomTrailing)
+                                        .clipShape(Capsule())
+                                )
+                                .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                        )
+                        .foregroundStyle(LinearGradient(colors: [.pink, .red],
+                                                       startPoint: .topLeading,
+                                                       endPoint: .bottomTrailing))
+                        .contentShape(Capsule())
                 }
+                .buttonStyle(ScaleOnPressStyle())
             }
         }
         .padding(.horizontal, 16)
@@ -251,6 +301,15 @@ struct SearchCityView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Local interactive button style (press scale)
+private struct ScaleOnPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: configuration.isPressed)
     }
 }
 

@@ -47,6 +47,7 @@ struct PlaceholderView: View {
         }
         .navigationBarBackButtonHidden(true)
         .preferredColorScheme(.dark) // Force dark mode for this view only
+        .environment(\.colorScheme, .dark) // Ensure WeatherBackground and any scheme-dependent views render dark
     }
 }
 
@@ -417,3 +418,4 @@ private struct Twinkles: View {
 #Preview {
     PlaceholderView()
 }
+
